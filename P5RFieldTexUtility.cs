@@ -24,12 +24,9 @@ namespace P5RFieldTexUtility
         public P5RFieldTexUtilityForm()
         {
             InitializeComponent();
-            rtb_Log.Text += $"Export folder set to \"{ExportFolder}\" by default.";
-        }
-
-        private void InputFiles_Click(object sender, EventArgs e)
-        {
-            SetInputFiles();
+            Output.Logging = true;
+            Output.LogControl = rtb_Log;
+            Output.Log($"Export folder set to \"{ExportFolder}\" by default.");
         }
 
         private void SetInputFiles()
@@ -38,7 +35,7 @@ namespace P5RFieldTexUtility
             if (files.Count <= 0)
                 return;
             InputFiles = files;
-            rtb_Log.Text += "\nInput files have been chosen via file selection.";
+            Output.Log("\nInput files have been chosen via file selection.");
         }
 
         private void ExportFolder_Click(object sender, EventArgs e)
@@ -52,7 +49,7 @@ namespace P5RFieldTexUtility
             if (!Directory.Exists(folder))
                 return;
             ExportFolder = folder;
-            rtb_Log.Text += $"\nExport Folder has been set to:\n{folder}";
+            Output.Log($"\nExport Folder has been set to:\n{folder}");
         }
 
         private void ExtractBtn_Click(object sender, EventArgs e)
@@ -70,7 +67,7 @@ namespace P5RFieldTexUtility
                 if (PAKFileSystem.TryOpen(file, out pak))
                 {
                     string outputFolder = ExportFolder + Path.DirectorySeparatorChar + Path.GetFileName(file);
-                    rtb_Log.Text += $"\nExtracting all files in \"{Path.GetFileName(file)}\" to:\n\t\"{outputFolder}\"";
+                    Output.Log($"\nExtracting all files in \"{Path.GetFileName(file)}\" to:\n\t\"{outputFolder}\"");
 
                     List<string> pakFiles = new List<string>();
                     foreach (var pakFile in pak.EnumerateFiles())
@@ -85,14 +82,13 @@ namespace P5RFieldTexUtility
                         {
                             inputStream.CopyTo(stream);
                             pakFiles.Add(outputFile);
-                            //rtb_Log.Text += $"\n\t\tExtracted \"{Path.GetFileName(outputFile)}\"";
                         }
                     }
                 }
                 else
-                    rtb_Log.Text += $"\nCould not open archive: \"{Path.GetFileName(file)}\"";
+                    Output.Log($"\nCould not open archive: \"{Path.GetFileName(file)}\"");
 
-                rtb_Log.Text += $"\nDone extracting files from archives.";
+                Output.Log($"\nDone extracting files from archives.");
             }
         }
 
@@ -100,7 +96,7 @@ namespace P5RFieldTexUtility
         {
             var data = (string[])e.Data.GetData(DataFormats.FileDrop, false);
             InputFiles = data.ToList();
-            rtb_Log.Text += "\nInput files have been chosen via drag and drop.";
+            Output.Log("\nInput files have been chosen via drag and drop.");
             ExtractToExportFolder();
         }
 
@@ -115,7 +111,7 @@ namespace P5RFieldTexUtility
             if (!Directory.Exists(folder))
                 return;
             EditedDupesFolder = folder;
-            rtb_Log.Text += $"\nEdited Duplicates Folder has been set to:\n{folder}";
+            Output.Log($"\nEdited Duplicates Folder has been set to:\n{folder}");
         }
 
         private void ReplaceDuplicates_Click(object sender, EventArgs e)
@@ -133,42 +129,56 @@ namespace P5RFieldTexUtility
             var editedFiles = WinFormsDialogs.SelectFile("Choose Edited Extracted File(s)...", true);
             if (editedFiles.Count <= 0)
                 return;
-            rtb_Log.Text += "\nEdited Extracted Files have been chosen.";
+            Output.Log("\nEdited Extracted Files have been chosen.");
 
             var uneditedExportFiles = Directory.GetFiles(ExportFolder, "*", SearchOption.AllDirectories);
 
             foreach (var editedFile in editedFiles)
             {
                 // Find original file from exported folder that matches edited file's name...
-                if (uneditedExportFiles.Any(x => Path.GetFileName(x).Equals(Path.GetFileName(editedFile))))
+                if (uneditedExportFiles.Any(x => Path.GetFileName(x).ToLower().Equals(Path.GetFileName(editedFile).ToLower())))
                 {
                     // Get file info for original file with matching name
-                    var originalFile = uneditedExportFiles.First(x => Path.GetFileName(x).Equals(Path.GetFileName(editedFile)));
+                    var originalFile = uneditedExportFiles.First(x => Path.GetFileName(x).ToLower().Equals(Path.GetFileName(editedFile).ToLower()));
                     FileInfo originalFileInfo = new FileInfo(originalFile);
                     
                     // For each file in unedited file export folder...
                     foreach (var exportedFile in uneditedExportFiles)
                     {
-                        // If file has the same size as the original matching name file...
                         FileInfo exportedFileInfo = new FileInfo(exportedFile);
-                        if (originalFileInfo.Length == exportedFileInfo.Length)
-                        {
-                            // If files are 100% identical bytewise...
-                            if (FileSys.AreFilesIdentical(exportedFile, originalFile))
-                            {
-                                // Create new output path for edited file using name/foldername of identical unedited file
-                                string newPath = Path.Combine(EditedDupesFolder, Path.GetFileName(Path.GetDirectoryName(exportedFile)), Path.GetFileName(exportedFile));
-                                Directory.CreateDirectory(Path.GetDirectoryName(newPath));
-                                File.Copy(editedFile, newPath, true);
-                                rtb_Log.Text += $"\nCopied duplicate file to:\n\t\"{newPath}\"";
-                                // Create Dummy .BIN
 
+                        // If file has the same name as the original file...
+                        // (unless ignore different names option is enabled)
+                        if (ignoreFileNameDifferencesToolStripMenuItem.Checked || 
+                            Path.GetFileName(originalFile).ToLower() == Path.GetFileName(exportedFile).ToLower())
+                        {
+                            // If file has the same size as the original matching name file...
+                            // (unless ignore binary differences option is enabled)
+                            if (ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.Checked ||
+                                originalFileInfo.Length == exportedFileInfo.Length)
+                            {
+                                // If files are 100% identical bytewise...
+                                // (unless ignore binary differences option is enabled)
+                                if (ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.Checked ||
+                                    FileSys.AreFilesIdentical(exportedFile, originalFile))
+                                {
+                                    // Create new output path for edited file using name/foldername of identical unedited file
+                                    string newPath = Path.Combine(EditedDupesFolder, Path.GetFileName(Path.GetDirectoryName(exportedFile)), Path.GetFileName(exportedFile));
+                                    Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+                                    if (File.Exists(newPath) && !replaceDuplicatesToolStripMenuItem.Checked)
+                                        Output.Log($"\nSKIPPED replacing file since it already exists:\n\t\"{newPath}\"");
+                                    else
+                                    {
+                                        File.Copy(editedFile, newPath, replaceDuplicatesToolStripMenuItem.Checked);
+                                        Output.Log($"\nCopied duplicate file to:\n\t\"{newPath}\"");
+                                    }
+                                }
                             }
                         }
                     }
                 }                
             }
-            rtb_Log.Text += $"\nDone copying edits to duplicate files folder.";
+            Output.Log($"\nDone copying edits to duplicate files folder.");
         }
 
         private void RepackBINs_Click(object sender, EventArgs e)
@@ -186,13 +196,13 @@ namespace P5RFieldTexUtility
             var repackedFolder = WinFormsDialogs.SelectFolder("Choose Repacked .BIN Destination Folder...");
             if (!Directory.Exists(repackedFolder))
                 return;
-            rtb_Log.Text += $"\nRepacked .BIN Destination Folder has been chosen:\n\t{repackedFolder}";
+            Output.Log($"\nRepacked .BIN Destination Folder has been chosen:\n\t{repackedFolder}");
 
-            foreach(var dir in Directory.GetDirectories(EditedDupesFolder).Where(x => x.EndsWith(".BIN")))
+            foreach (var dir in Directory.GetDirectories(EditedDupesFolder).Where(x => x.EndsWith(".BIN")))
             {
                 InjectNewTexIntoPAC(dir, repackedFolder);
             }
-            rtb_Log.Text += $"\nDone repacking .BIN files.";
+            Output.Log($"\nDone repacking .BIN files.");
         }
 
         private void InjectNewTexIntoPAC(string editedDupeDir, string repackedFolder)
@@ -208,7 +218,17 @@ namespace P5RFieldTexUtility
 
             string binOutPath = Path.Combine(repackedFolder, Path.GetFileName(editedDupeDir));
             pak.Save(binOutPath);
-            rtb_Log.Text += $"\nRepacked .BIN to:\n\t\"{binOutPath}\"";
+            Output.Log($"\nRepacked .BIN to:\n\t\"{binOutPath}\"");
+        }
+
+        private void DupesFolder_Click(object sender, EventArgs e)
+        {
+            SetEditedDupesFolder();
+        }
+
+        private void OutputLog_CheckedChanged(object sender, EventArgs e)
+        {
+            Output.Logging = enableOutputLogToolStripMenuItem.Checked;
         }
     }
 }
