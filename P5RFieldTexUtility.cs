@@ -18,15 +18,32 @@ namespace P5RFieldTexUtility
     public partial class P5RFieldTexUtilityForm : Form
     {
         public static List<string> InputFiles = new List<string>();
-        public static string ExportFolder = "./Export";
-        public static string EditedDupesFolder = "./EditedDuplicates";
+        public Config settings = new Config();
 
         public P5RFieldTexUtilityForm()
         {
             InitializeComponent();
+            settings = settings.LoadJson();
+            ApplySettingsToFormOptions();
+
             Output.Logging = true;
             Output.LogControl = rtb_Log;
-            Output.Log($"Export folder set to \"{ExportFolder}\" by default.");
+            Output.Log($"Export folder set to \"{settings.BinExportPath}\" by default.");
+        }
+
+        private void ApplySettingsToFormOptions()
+        {
+            // Reflect values from config file in checkbox checked states
+            chk_IgnoreBinaryDiff.Checked = settings.IgnoreBinaryDiff;
+            chk_OverwriteSameName.Checked = settings.OverwriteSameName;
+            chk_IgnoreNameDiff.Checked = settings.IgnoreNameDiff;
+            chk_EnableOutputLog.Checked = settings.EnableOutputLog;
+
+            // Values can be changed from the CheckedChanged event once they're enabled here
+            chk_IgnoreBinaryDiff.Enabled = true;
+            chk_OverwriteSameName.Enabled = true;
+            chk_IgnoreNameDiff.Enabled = true;
+            chk_EnableOutputLog.Enabled = true;
         }
 
         private void SetInputFiles()
@@ -38,18 +55,34 @@ namespace P5RFieldTexUtility
             Output.Log("\nInput files have been chosen via file selection.");
         }
 
-        private void ExportFolder_Click(object sender, EventArgs e)
-        {
-            SetExportFolder();
-        }
-
         private void SetExportFolder()
         {
             var folder = WinFormsDialogs.SelectFolder("Choose Export Folder...");
             if (!Directory.Exists(folder))
                 return;
-            ExportFolder = folder;
+            settings.BinExportPath = folder;
+            settings.SaveJson(settings);
             Output.Log($"\nExport Folder has been set to:\n{folder}");
+        }
+
+        private void SetDuplicatesFolder()
+        {
+            var folder = WinFormsDialogs.SelectFolder("Choose Output Folder for Edited Duplicates...");
+            if (!Directory.Exists(folder))
+                return;
+            settings.DuplicateExportPath = folder;
+            settings.SaveJson(settings);
+            Output.Log($"\nEdited Duplicates Folder has been set to:\n{folder}");
+        }
+
+        private void ExportFolder_Click(object sender, EventArgs e)
+        {
+            SetExportFolder();
+        }
+
+        private void DupesFolder_Click(object sender, EventArgs e)
+        {
+            SetDuplicatesFolder();
         }
 
         private void ExtractBtn_Click(object sender, EventArgs e)
@@ -59,6 +92,19 @@ namespace P5RFieldTexUtility
             WinFormsDialogs.ShowMessageBox("Done Extracting Files","All files have been extracted!", MessageBoxButtons.OK);
         }
 
+        private void ExtractBtn_DragDrop(object sender, DragEventArgs e)
+        {
+            var data = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            InputFiles = data.ToList();
+            Output.Log("\nInput files have been chosen via drag and drop.");
+            ExtractToExportFolder();
+        }
+
+        private void DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = DragDropEffects.Move;
+        }
+
         private void ExtractToExportFolder()
         {
             foreach (var file in InputFiles)
@@ -66,7 +112,7 @@ namespace P5RFieldTexUtility
                 PAKFileSystem pak = new PAKFileSystem();
                 if (PAKFileSystem.TryOpen(file, out pak))
                 {
-                    string outputFolder = ExportFolder + Path.DirectorySeparatorChar + Path.GetFileName(file);
+                    string outputFolder = settings.BinExportPath + Path.DirectorySeparatorChar + Path.GetFileName(file);
                     Output.Log($"\nExtracting all files in \"{Path.GetFileName(file)}\" to:\n\t\"{outputFolder}\"");
 
                     List<string> pakFiles = new List<string>();
@@ -92,38 +138,16 @@ namespace P5RFieldTexUtility
             }
         }
 
-        private void ExtractBtn_DragDrop(object sender, DragEventArgs e)
-        {
-            var data = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-            InputFiles = data.ToList();
-            Output.Log("\nInput files have been chosen via drag and drop.");
-            ExtractToExportFolder();
-        }
-
-        private void DragEnter(object sender, DragEventArgs e)
-        {
-            e.Effect = DragDropEffects.Move;
-        }
-
-        private void SetEditedDupesFolder()
-        {
-            var folder = WinFormsDialogs.SelectFolder("Choose Output Folder for Edited Duplicates...");
-            if (!Directory.Exists(folder))
-                return;
-            EditedDupesFolder = folder;
-            Output.Log($"\nEdited Duplicates Folder has been set to:\n{folder}");
-        }
-
         private void ReplaceDuplicates_Click(object sender, EventArgs e)
         {
-            if (!Directory.Exists(ExportFolder))
+            if (!Directory.Exists(settings.BinExportPath))
                 SetExportFolder();
-            if (!Directory.Exists(ExportFolder))
+            if (!Directory.Exists(settings.BinExportPath))
                 return;
 
-            if (!Directory.Exists(EditedDupesFolder))
-                SetEditedDupesFolder();
-            if (!Directory.Exists(EditedDupesFolder))
+            if (!Directory.Exists(settings.DuplicateExportPath))
+                SetDuplicatesFolder();
+            if (!Directory.Exists(settings.DuplicateExportPath))
                 return;
 
             var editedFiles = WinFormsDialogs.SelectFile("Choose Edited Extracted File(s)...", true);
@@ -131,7 +155,7 @@ namespace P5RFieldTexUtility
                 return;
             Output.Log("\nEdited Extracted Files have been chosen.");
 
-            var uneditedExportFiles = Directory.GetFiles(ExportFolder, "*", SearchOption.AllDirectories);
+            var uneditedExportFiles = Directory.GetFiles(settings.BinExportPath, "*", SearchOption.AllDirectories);
 
             foreach (var editedFile in editedFiles)
             {
@@ -149,21 +173,21 @@ namespace P5RFieldTexUtility
 
                         // If file has the same name as the original file...
                         // (unless ignore different names option is enabled)
-                        if (ignoreFileNameDifferencesToolStripMenuItem.Checked || 
+                        if (chk_IgnoreNameDiff.Checked || 
                             Path.GetFileName(originalFile).ToLower() == Path.GetFileName(exportedFile).ToLower())
                         {
                             // If file has the same size as the original matching name file...
                             // (unless ignore binary differences option is enabled)
-                            if (ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.Checked ||
+                            if (chk_IgnoreBinaryDiff.Checked ||
                                 originalFileInfo.Length == exportedFileInfo.Length)
                             {
                                 // If files are 100% identical bytewise...
                                 // (unless ignore binary differences option is enabled)
-                                if (ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.Checked ||
+                                if (chk_IgnoreBinaryDiff.Checked ||
                                     FileSys.AreFilesIdentical(exportedFile, originalFile))
                                 {
                                     // Create new output path for edited file using name/foldername of identical unedited file
-                                    string newPath = Path.Combine(EditedDupesFolder, Path.GetFileName(Path.GetDirectoryName(exportedFile)), Path.GetFileName(exportedFile));
+                                    string newPath = Path.Combine(settings.DuplicateExportPath, Path.GetFileName(Path.GetDirectoryName(exportedFile)), Path.GetFileName(exportedFile));
                                     Directory.CreateDirectory(Path.GetDirectoryName(newPath));
                                     if (File.Exists(newPath) && !replaceDuplicatesToolStripMenuItem.Checked)
                                         Output.Log($"\nSKIPPED replacing file since it already exists:\n\t\"{newPath}\"");
@@ -183,14 +207,14 @@ namespace P5RFieldTexUtility
 
         private void RepackBINs_Click(object sender, EventArgs e)
         {
-            if (!Directory.Exists(ExportFolder))
+            if (!Directory.Exists(settings.BinExportPath))
                 SetExportFolder();
-            if (!Directory.Exists(ExportFolder))
+            if (!Directory.Exists(settings.BinExportPath))
                 return;
 
-            if (!Directory.Exists(EditedDupesFolder))
-                SetEditedDupesFolder();
-            if (!Directory.Exists(EditedDupesFolder))
+            if (!Directory.Exists(settings.DuplicateExportPath))
+                SetDuplicatesFolder();
+            if (!Directory.Exists(settings.DuplicateExportPath))
                 return;
 
             var repackedFolder = WinFormsDialogs.SelectFolder("Choose Repacked .BIN Destination Folder...");
@@ -198,7 +222,7 @@ namespace P5RFieldTexUtility
                 return;
             Output.Log($"\nRepacked .BIN Destination Folder has been chosen:\n\t{repackedFolder}");
 
-            foreach (var dir in Directory.GetDirectories(EditedDupesFolder).Where(x => x.EndsWith(".BIN")))
+            foreach (var dir in Directory.GetDirectories(settings.DuplicateExportPath).Where(x => x.EndsWith(".BIN")))
             {
                 InjectNewTexIntoPAC(dir, repackedFolder);
             }
@@ -207,7 +231,7 @@ namespace P5RFieldTexUtility
 
         private void InjectNewTexIntoPAC(string editedDupeDir, string repackedFolder)
         {
-            string originalDir = Directory.GetDirectories(ExportFolder, "*", SearchOption.AllDirectories)
+            string originalDir = Directory.GetDirectories(settings.BinExportPath, "*", SearchOption.AllDirectories)
                 .First(x => Path.GetFileName(x).Equals(Path.GetFileName(editedDupeDir)));
 
             PAKFileSystem pak = new PAKFileSystem();
@@ -221,14 +245,18 @@ namespace P5RFieldTexUtility
             Output.Log($"\nRepacked .BIN to:\n\t\"{binOutPath}\"");
         }
 
-        private void DupesFolder_Click(object sender, EventArgs e)
+        private void CheckedChanged(object sender, EventArgs e)
         {
-            SetEditedDupesFolder();
-        }
-
-        private void OutputLog_CheckedChanged(object sender, EventArgs e)
-        {
-            Output.Logging = enableOutputLogToolStripMenuItem.Checked;
+            var chk = (ToolStripMenuItem)sender;
+            if (chk.Enabled)
+            {
+                settings.IgnoreBinaryDiff = chk_IgnoreBinaryDiff.Checked;
+                settings.OverwriteSameName = chk_OverwriteSameName.Checked;
+                settings.IgnoreNameDiff = chk_IgnoreNameDiff.Checked;
+                settings.EnableOutputLog = chk_EnableOutputLog.Checked;
+                Output.Logging = chk_EnableOutputLog.Checked;
+                settings.SaveJson(settings);
+            }
         }
     }
 }

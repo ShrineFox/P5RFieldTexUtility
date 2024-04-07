@@ -32,17 +32,17 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.chooseExportFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.chooseDupesOutputFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.replaceDuplicatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.repackBINsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.chk_IgnoreBinaryDiff = new System.Windows.Forms.ToolStripMenuItem();
+            this.chk_OverwriteSameName = new System.Windows.Forms.ToolStripMenuItem();
+            this.chk_IgnoreNameDiff = new System.Windows.Forms.ToolStripMenuItem();
+            this.chk_EnableOutputLog = new System.Windows.Forms.ToolStripMenuItem();
             this.tlp_Main = new System.Windows.Forms.TableLayoutPanel();
             this.btn_Extract = new System.Windows.Forms.Button();
             this.rtb_Log = new System.Windows.Forms.RichTextBox();
-            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.replaceExistingDupesWSameNameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ignoreBinaryDifferencesForDuplicatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.ignoreFileNameDifferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.chooseDupesOutputFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.enableOutputLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tlp_Main.SuspendLayout();
             this.SuspendLayout();
@@ -77,6 +77,13 @@
             this.chooseExportFolderToolStripMenuItem.Text = "Choose .BIN Export Folder";
             this.chooseExportFolderToolStripMenuItem.Click += new System.EventHandler(this.ExportFolder_Click);
             // 
+            // chooseDupesOutputFolderToolStripMenuItem
+            // 
+            this.chooseDupesOutputFolderToolStripMenuItem.Name = "chooseDupesOutputFolderToolStripMenuItem";
+            this.chooseDupesOutputFolderToolStripMenuItem.Size = new System.Drawing.Size(283, 26);
+            this.chooseDupesOutputFolderToolStripMenuItem.Text = "Choose Dupes Output Folder";
+            this.chooseDupesOutputFolderToolStripMenuItem.Click += new System.EventHandler(this.DupesFolder_Click);
+            // 
             // replaceDuplicatesToolStripMenuItem
             // 
             this.replaceDuplicatesToolStripMenuItem.Name = "replaceDuplicatesToolStripMenuItem";
@@ -90,6 +97,59 @@
             this.repackBINsToolStripMenuItem.Size = new System.Drawing.Size(108, 24);
             this.repackBINsToolStripMenuItem.Text = "Repack .BINs";
             this.repackBINsToolStripMenuItem.Click += new System.EventHandler(this.RepackBINs_Click);
+            // 
+            // optionsToolStripMenuItem
+            // 
+            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.chk_IgnoreBinaryDiff,
+            this.chk_OverwriteSameName,
+            this.chk_IgnoreNameDiff,
+            this.chk_EnableOutputLog});
+            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
+            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(75, 24);
+            this.optionsToolStripMenuItem.Text = "Options";
+            // 
+            // chk_IgnoreBinaryDiff
+            // 
+            this.chk_IgnoreBinaryDiff.Checked = true;
+            this.chk_IgnoreBinaryDiff.CheckOnClick = true;
+            this.chk_IgnoreBinaryDiff.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chk_IgnoreBinaryDiff.Enabled = false;
+            this.chk_IgnoreBinaryDiff.Name = "chk_IgnoreBinaryDiff";
+            this.chk_IgnoreBinaryDiff.Size = new System.Drawing.Size(356, 26);
+            this.chk_IgnoreBinaryDiff.Text = "Ignore Binary Differences for Duplicates";
+            this.chk_IgnoreBinaryDiff.CheckedChanged += new System.EventHandler(this.CheckedChanged);
+            // 
+            // chk_OverwriteSameName
+            // 
+            this.chk_OverwriteSameName.Checked = true;
+            this.chk_OverwriteSameName.CheckOnClick = true;
+            this.chk_OverwriteSameName.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chk_OverwriteSameName.Enabled = false;
+            this.chk_OverwriteSameName.Name = "chk_OverwriteSameName";
+            this.chk_OverwriteSameName.Size = new System.Drawing.Size(356, 26);
+            this.chk_OverwriteSameName.Text = "Replace Existing Dupes w/ Same Name";
+            this.chk_OverwriteSameName.CheckedChanged += new System.EventHandler(this.CheckedChanged);
+            // 
+            // chk_IgnoreNameDiff
+            // 
+            this.chk_IgnoreNameDiff.CheckOnClick = true;
+            this.chk_IgnoreNameDiff.Enabled = false;
+            this.chk_IgnoreNameDiff.Name = "chk_IgnoreNameDiff";
+            this.chk_IgnoreNameDiff.Size = new System.Drawing.Size(356, 26);
+            this.chk_IgnoreNameDiff.Text = "Ignore File Name Differences";
+            this.chk_IgnoreNameDiff.CheckedChanged += new System.EventHandler(this.CheckedChanged);
+            // 
+            // chk_EnableOutputLog
+            // 
+            this.chk_EnableOutputLog.Checked = true;
+            this.chk_EnableOutputLog.CheckOnClick = true;
+            this.chk_EnableOutputLog.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chk_EnableOutputLog.Enabled = false;
+            this.chk_EnableOutputLog.Name = "chk_EnableOutputLog";
+            this.chk_EnableOutputLog.Size = new System.Drawing.Size(356, 26);
+            this.chk_EnableOutputLog.Text = "Enable Output Log";
+            this.chk_EnableOutputLog.CheckedChanged += new System.EventHandler(this.CheckedChanged);
             // 
             // tlp_Main
             // 
@@ -133,59 +193,6 @@
             this.rtb_Log.TabIndex = 1;
             this.rtb_Log.Text = "";
             // 
-            // optionsToolStripMenuItem
-            // 
-            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ignoreBinaryDifferencesForDuplicatesToolStripMenuItem,
-            this.replaceExistingDupesWSameNameToolStripMenuItem,
-            this.ignoreFileNameDifferencesToolStripMenuItem,
-            this.enableOutputLogToolStripMenuItem});
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(75, 24);
-            this.optionsToolStripMenuItem.Text = "Options";
-            // 
-            // replaceExistingDupesWSameNameToolStripMenuItem
-            // 
-            this.replaceExistingDupesWSameNameToolStripMenuItem.Checked = true;
-            this.replaceExistingDupesWSameNameToolStripMenuItem.CheckOnClick = true;
-            this.replaceExistingDupesWSameNameToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.replaceExistingDupesWSameNameToolStripMenuItem.Name = "replaceExistingDupesWSameNameToolStripMenuItem";
-            this.replaceExistingDupesWSameNameToolStripMenuItem.Size = new System.Drawing.Size(356, 26);
-            this.replaceExistingDupesWSameNameToolStripMenuItem.Text = "Replace Existing Dupes w/ Same Name";
-            // 
-            // ignoreBinaryDifferencesForDuplicatesToolStripMenuItem
-            // 
-            this.ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.Checked = true;
-            this.ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.CheckOnClick = true;
-            this.ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.Name = "ignoreBinaryDifferencesForDuplicatesToolStripMenuItem";
-            this.ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.Size = new System.Drawing.Size(356, 26);
-            this.ignoreBinaryDifferencesForDuplicatesToolStripMenuItem.Text = "Ignore Binary Differences for Duplicates";
-            // 
-            // ignoreFileNameDifferencesToolStripMenuItem
-            // 
-            this.ignoreFileNameDifferencesToolStripMenuItem.CheckOnClick = true;
-            this.ignoreFileNameDifferencesToolStripMenuItem.Name = "ignoreFileNameDifferencesToolStripMenuItem";
-            this.ignoreFileNameDifferencesToolStripMenuItem.Size = new System.Drawing.Size(356, 26);
-            this.ignoreFileNameDifferencesToolStripMenuItem.Text = "Ignore File Name Differences";
-            // 
-            // chooseDupesOutputFolderToolStripMenuItem
-            // 
-            this.chooseDupesOutputFolderToolStripMenuItem.Name = "chooseDupesOutputFolderToolStripMenuItem";
-            this.chooseDupesOutputFolderToolStripMenuItem.Size = new System.Drawing.Size(283, 26);
-            this.chooseDupesOutputFolderToolStripMenuItem.Text = "Choose Dupes Output Folder";
-            this.chooseDupesOutputFolderToolStripMenuItem.Click += new System.EventHandler(this.DupesFolder_Click);
-            // 
-            // enableOutputLogToolStripMenuItem
-            // 
-            this.enableOutputLogToolStripMenuItem.Checked = true;
-            this.enableOutputLogToolStripMenuItem.CheckOnClick = true;
-            this.enableOutputLogToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.enableOutputLogToolStripMenuItem.Name = "enableOutputLogToolStripMenuItem";
-            this.enableOutputLogToolStripMenuItem.Size = new System.Drawing.Size(356, 26);
-            this.enableOutputLogToolStripMenuItem.Text = "Enable Output Log";
-            this.enableOutputLogToolStripMenuItem.CheckedChanged += new System.EventHandler(this.OutputLog_CheckedChanged);
-            // 
             // P5RFieldTexUtilityForm
             // 
             this.AllowDrop = true;
@@ -217,10 +224,10 @@
         private System.Windows.Forms.RichTextBox rtb_Log;
         private System.Windows.Forms.ToolStripMenuItem repackBINsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem replaceExistingDupesWSameNameToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ignoreBinaryDifferencesForDuplicatesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem ignoreFileNameDifferencesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem chk_OverwriteSameName;
+        private System.Windows.Forms.ToolStripMenuItem chk_IgnoreBinaryDiff;
+        private System.Windows.Forms.ToolStripMenuItem chk_IgnoreNameDiff;
         private System.Windows.Forms.ToolStripMenuItem chooseDupesOutputFolderToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem enableOutputLogToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem chk_EnableOutputLog;
     }
 }
