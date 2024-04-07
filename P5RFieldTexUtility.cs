@@ -17,12 +17,14 @@ namespace P5RFieldTexUtility
 {
     public partial class P5RFieldTexUtilityForm : Form
     {
+        public static Version version = new Version(1, 2);
         public static List<string> InputFiles = new List<string>();
         public Config settings = new Config();
 
         public P5RFieldTexUtilityForm()
         {
             InitializeComponent();
+            this.Text += $" v{version.Major}.{version.Minor}";
             settings = settings.LoadJson();
             ApplySettingsToFormOptions();
 

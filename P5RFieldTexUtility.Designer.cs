@@ -204,7 +204,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "P5RFieldTexUtilityForm";
-            this.Text = "P5RFieldTexUtility v1.1";
+            this.Text = "P5RFieldTexUtility";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.tlp_Main.ResumeLayout(false);
