@@ -17,14 +17,14 @@ namespace P5RFieldTexUtility
 {
     public partial class P5RFieldTexUtilityForm : Form
     {
-        public static Version version = new Version(1, 2);
+        public static Version version = new Version(1, 2, 1);
         public static List<string> InputFiles = new List<string>();
         public Config settings = new Config();
 
         public P5RFieldTexUtilityForm()
         {
             InitializeComponent();
-            this.Text += $" v{version.Major}.{version.Minor}";
+            this.Text += $" v{version.Major}.{version.Minor}.{version.Build}";
             settings = settings.LoadJson();
             ApplySettingsToFormOptions();
 
@@ -175,28 +175,30 @@ namespace P5RFieldTexUtility
 
                         // If file has the same name as the original file...
                         // (unless ignore different names option is enabled)
-                        if (chk_IgnoreNameDiff.Checked || 
+                        if (settings.IgnoreNameDiff || 
                             Path.GetFileName(originalFile).ToLower() == Path.GetFileName(exportedFile).ToLower())
                         {
                             // If file has the same size as the original matching name file...
                             // (unless ignore binary differences option is enabled)
-                            if (chk_IgnoreBinaryDiff.Checked ||
+                            if (settings.IgnoreBinaryDiff ||
                                 originalFileInfo.Length == exportedFileInfo.Length)
                             {
                                 // If files are 100% identical bytewise...
                                 // (unless ignore binary differences option is enabled)
-                                if (chk_IgnoreBinaryDiff.Checked ||
+                                if (settings.IgnoreBinaryDiff ||
                                     FileSys.AreFilesIdentical(exportedFile, originalFile))
                                 {
                                     // Create new output path for edited file using name/foldername of identical unedited file
                                     string newPath = Path.Combine(settings.DuplicateExportPath, Path.GetFileName(Path.GetDirectoryName(exportedFile)), Path.GetFileName(exportedFile));
                                     Directory.CreateDirectory(Path.GetDirectoryName(newPath));
-                                    if (File.Exists(newPath) && !replaceDuplicatesToolStripMenuItem.Checked)
-                                        Output.Log($"\nSKIPPED replacing file since it already exists:\n\t\"{newPath}\"");
+                                    if (settings.OverwriteSameName || !File.Exists(newPath))
+                                    {
+                                        File.Copy(editedFile, newPath, settings.OverwriteSameName);
+                                        Output.Log($"\nCopied duplicate file to:\n\t\"{newPath}\"");
+                                    }
                                     else
                                     {
-                                        File.Copy(editedFile, newPath, replaceDuplicatesToolStripMenuItem.Checked);
-                                        Output.Log($"\nCopied duplicate file to:\n\t\"{newPath}\"");
+                                        Output.Log($"\nSKIPPED replacing file since it already exists:\n\t\"{newPath}\"");
                                     }
                                 }
                             }
