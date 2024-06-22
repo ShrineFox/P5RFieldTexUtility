@@ -40,12 +40,16 @@ namespace P5RFieldTexUtility
             chk_OverwriteSameName.Checked = settings.OverwriteSameName;
             chk_IgnoreNameDiff.Checked = settings.IgnoreNameDiff;
             chk_EnableOutputLog.Checked = settings.EnableOutputLog;
+            chk_ConfirmOperations.Checked = settings.ConfirmOperations;
+            chk_UseBINsForDupeReplacement.Checked = settings.UseBINsForDupeReplacement;
 
             // Values can be changed from the CheckedChanged event once they're enabled here
             chk_IgnoreBinaryDiff.Enabled = true;
             chk_OverwriteSameName.Enabled = true;
             chk_IgnoreNameDiff.Enabled = true;
             chk_EnableOutputLog.Enabled = true;
+            chk_ConfirmOperations.Enabled = true;
+            chk_UseBINsForDupeReplacement.Enabled = true;
         }
 
         private void SetInputFiles()
@@ -172,11 +176,7 @@ namespace P5RFieldTexUtility
 
         private void ReplaceDuplicates_Click(object sender, EventArgs e)
         {
-            if (!Directory.Exists(settings.BinExportPath))
-                SetExportFolder();
-            if (!Directory.Exists(settings.BinExportPath))
-                return;
-
+            // Get path where discovered duplicates will be exported to using their replacement edited texture file
             if (!Directory.Exists(settings.DuplicateExportPath))
                 SetDuplicatesFolder();
             if (!Directory.Exists(settings.DuplicateExportPath))
@@ -186,6 +186,83 @@ namespace P5RFieldTexUtility
             if (editedFiles.Count <= 0)
                 return;
             Output.Log("\nEdited Extracted Files have been chosen.");
+
+            if (!settings.UseBINsForDupeReplacement)
+            {
+                ReplaceDupesBasedOnExtractedTex(editedFiles);
+            }
+            else
+            {
+                ReplaceDupesBasedOnBins(editedFiles);
+            }
+            
+            Output.Log($"\nDone copying edits to duplicate files folder.");
+        }
+
+        private void ReplaceDupesBasedOnBins(List<string> editedFiles)
+        {
+            // Get path original unedited texture .BINs
+            if (!Directory.Exists(settings.OriginalBINDirPath))
+                SetOriginalBinFolder();
+            if (!Directory.Exists(settings.OriginalBINDirPath))
+                return;
+
+            if (settings.ConfirmOperations)
+            {
+                if (!WinFormsDialogs.ShowMessageBox("Confirm Replace Duplicates?",
+                    "If you proceed, edited textures you just selected\n" +
+                    "will be copied to new folders in \n" +
+                    $"\"{settings.DuplicateExportPath}\" (duplicateExportPath)\n" +
+                    "if they match the filename of a texture from a .BIN in\n" +
+                    $"\"{settings.OriginalBINDirPath}\" (originalBINDirectory)."))
+                    return;
+            }
+
+            var ogBins = Directory.GetFiles(settings.OriginalBINDirPath, "*.BIN", SearchOption.TopDirectoryOnly);
+
+            foreach (var editedFile in editedFiles)
+            {
+                foreach (var bin in ogBins)
+                {
+                    PAKFileSystem pak = new PAKFileSystem();
+                    pak.Load(bin);
+                    foreach (var tex in pak.EnumerateFiles().Where(x => x.ToUpper() == Path.GetFileName(editedFile.ToUpper())))
+                    {
+                        // Create new output path for edited file using name/foldername of identical unedited file
+                        string newPath = Path.Combine(settings.DuplicateExportPath, Path.GetFileName(bin), Path.GetFileName(editedFile));
+                        Directory.CreateDirectory(Path.GetDirectoryName(newPath));
+                        if (settings.OverwriteSameName || !File.Exists(newPath))
+                        {
+                            File.Copy(editedFile, newPath, settings.OverwriteSameName);
+                            Output.Log($"\nCopied duplicate file to:\n\t\"{newPath}\"");
+                        }
+                        else
+                        {
+                            Output.Log($"\nSKIPPED replacing file since it already exists:\n\t\"{newPath}\"");
+                        }
+                    }
+                }
+            }
+        }
+
+        private void ReplaceDupesBasedOnExtractedTex(List<string> editedFiles)
+        {
+            // Get path original unedited textures were exported to from .BINs
+            if (!Directory.Exists(settings.BinExportPath))
+                SetExportFolder();
+            if (!Directory.Exists(settings.BinExportPath))
+                return;
+
+            if (settings.ConfirmOperations)
+            {
+                if (!WinFormsDialogs.ShowMessageBox("Confirm Replace Duplicates?",
+                    "If you proceed, edited textures you just selected\n" +
+                    "will be copied to new folders in \n" +
+                    $"\"{settings.DuplicateExportPath}\" (duplicateExportPath)\n" +
+                    "if they match the filename of a texture from\n" +
+                    $"\"{settings.BinExportPath}\" (binExportPath)."))
+                    return;
+            }
 
             var uneditedExportFiles = Directory.GetFiles(settings.BinExportPath, "*", SearchOption.AllDirectories);
 
@@ -197,7 +274,7 @@ namespace P5RFieldTexUtility
                     // Get file info for original file with matching name
                     var originalFile = uneditedExportFiles.First(x => Path.GetFileName(x).ToLower().Equals(Path.GetFileName(editedFile).ToLower()));
                     FileInfo originalFileInfo = new FileInfo(originalFile);
-                    
+
                     // For each file in unedited file export folder...
                     foreach (var exportedFile in uneditedExportFiles)
                     {
@@ -205,7 +282,7 @@ namespace P5RFieldTexUtility
 
                         // If file has the same name as the original file...
                         // (unless ignore different names option is enabled)
-                        if (settings.IgnoreNameDiff || 
+                        if (settings.IgnoreNameDiff ||
                             Path.GetFileName(originalFile).ToLower() == Path.GetFileName(exportedFile).ToLower())
                         {
                             // If file has the same size as the original matching name file...
@@ -234,9 +311,8 @@ namespace P5RFieldTexUtility
                             }
                         }
                     }
-                }                
+                }
             }
-            Output.Log($"\nDone copying edits to duplicate files folder.");
         }
 
         private void RepackBINs_Click(object sender, EventArgs e)
@@ -256,7 +332,23 @@ namespace P5RFieldTexUtility
                 return;
             Output.Log($"\nRepacked .BIN Destination Folder has been chosen:\n\t{repackedFolder}");
 
-            foreach (var dir in Directory.GetDirectories(settings.DuplicateExportPath).Where(x => x.EndsWith(".BIN")))
+            if (settings.ConfirmOperations)
+            {
+                bool response = WinFormsDialogs.ShowMessageBox("Confirm Repack .BINs?",
+                    "If you proceed, edited textures in each folder in\n" +
+                    $"\"{settings.DuplicateExportPath}\" (duplicateExportPath)\n" +
+                    "will replace existing files in .BINs from\n" +
+                    $"\"{settings.OriginalBINDirPath}\" (originalBINDirPath)\n" +
+                    "and saved to the output directory you just specified.");
+                if (!response)
+                {
+                    return;
+                }
+            }
+
+            var dirs = Directory.GetDirectories(settings.DuplicateExportPath);
+
+            foreach (var dir in dirs.Where(x => x.EndsWith(".BIN")))
             {
                 InjectNewTexIntoPAC(dir, repackedFolder);
             }
@@ -294,6 +386,8 @@ namespace P5RFieldTexUtility
                 settings.OverwriteSameName = chk_OverwriteSameName.Checked;
                 settings.IgnoreNameDiff = chk_IgnoreNameDiff.Checked;
                 settings.EnableOutputLog = chk_EnableOutputLog.Checked;
+                settings.ConfirmOperations = chk_ConfirmOperations.Checked;
+                settings.UseBINsForDupeReplacement = chk_UseBINsForDupeReplacement.Checked;
                 Output.Logging = chk_EnableOutputLog.Checked;
                 settings.SaveJson(settings);
             }
@@ -310,6 +404,17 @@ namespace P5RFieldTexUtility
                 SetInputFiles();
             if (!Directory.Exists(settings.InputEditedTexPath))
                 return;
+
+            if (settings.ConfirmOperations)
+            {
+                if (!WinFormsDialogs.ShowMessageBox("Confirm Collect Edited Tex?",
+                    "If you proceed, edited textures from\n" +
+                    $"\"{settings.DuplicateExportPath}\" (duplicateExportPath)\n" +
+                    "will be copied to\n" +
+                    $"\"{settings.InputEditedTexPath}\" (inputEditedTexPath)\n" +
+                    "overwriting an existing file if it exists there."))
+                    return;
+            }
 
             List<string> files = new List<string>();
             foreach (var dds in Directory.GetFiles(settings.DuplicateExportPath, "*.dds", SearchOption.AllDirectories))

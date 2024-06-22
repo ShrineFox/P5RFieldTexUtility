@@ -46,6 +46,8 @@
             this.collectUniqueTexToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.chooseInputFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.chooseOriginalBINFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.chk_ConfirmOperations = new System.Windows.Forms.ToolStripMenuItem();
+            this.chk_UseBINsForDupeReplacement = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tlp_Main.SuspendLayout();
             this.SuspendLayout();
@@ -110,7 +112,9 @@
             this.chk_IgnoreBinaryDiff,
             this.chk_OverwriteSameName,
             this.chk_IgnoreNameDiff,
-            this.chk_EnableOutputLog});
+            this.chk_UseBINsForDupeReplacement,
+            this.chk_EnableOutputLog,
+            this.chk_ConfirmOperations});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(75, 24);
             this.optionsToolStripMenuItem.Text = "Options";
@@ -220,6 +224,24 @@
             this.chooseOriginalBINFolderToolStripMenuItem.Text = "Choose Original .BIN Folder";
             this.chooseOriginalBINFolderToolStripMenuItem.Click += new System.EventHandler(this.ChooseOriginalBinFolder_Click);
             // 
+            // chk_ConfirmOperations
+            // 
+            this.chk_ConfirmOperations.CheckOnClick = true;
+            this.chk_ConfirmOperations.Enabled = false;
+            this.chk_ConfirmOperations.Name = "chk_ConfirmOperations";
+            this.chk_ConfirmOperations.Size = new System.Drawing.Size(356, 26);
+            this.chk_ConfirmOperations.Text = "Confirm Operations";
+            this.chk_ConfirmOperations.CheckedChanged += new System.EventHandler(this.CheckedChanged);
+            // 
+            // chk_UseBINsForDupeReplacement
+            // 
+            this.chk_UseBINsForDupeReplacement.CheckOnClick = true;
+            this.chk_UseBINsForDupeReplacement.Enabled = false;
+            this.chk_UseBINsForDupeReplacement.Name = "chk_UseBINsForDupeReplacement";
+            this.chk_UseBINsForDupeReplacement.Size = new System.Drawing.Size(356, 26);
+            this.chk_UseBINsForDupeReplacement.Text = "Use BINs for Dupe Replacement";
+            this.chk_UseBINsForDupeReplacement.CheckedChanged += new System.EventHandler(this.CheckedChanged);
+            // 
             // P5RFieldTexUtilityForm
             // 
             this.AllowDrop = true;
@@ -259,5 +281,7 @@
         private System.Windows.Forms.ToolStripMenuItem collectUniqueTexToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem chooseInputFolderToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem chooseOriginalBINFolderToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem chk_ConfirmOperations;
+        private System.Windows.Forms.ToolStripMenuItem chk_UseBINsForDupeReplacement;
     }
 }

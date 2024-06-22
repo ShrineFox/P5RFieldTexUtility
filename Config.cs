@@ -12,8 +12,9 @@ namespace P5RFieldTexUtility
         public bool IgnoreBinaryDiff { get; set; } = true;
         public bool OverwriteSameName { get; set; } = true;
         public bool IgnoreNameDiff { get; set; } = false;
+        public bool UseBINsForDupeReplacement { get; set; } = false;
         public bool EnableOutputLog { get; set; } = true;
-
+        public bool ConfirmOperations { get; set; } = false;
 
         public void SaveJson(Config settings)
         {
