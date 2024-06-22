@@ -5,6 +5,8 @@ namespace P5RFieldTexUtility
 {
     public class Config
     {
+        public string InputEditedTexPath { get; set; } = "./EditedTex";
+        public string OriginalBINDirPath { get; set; } = "./OGBINs";
         public string DuplicateExportPath { get; set; } = "./Duplicates";
         public string BinExportPath { get; set; } = "./Export";
         public bool IgnoreBinaryDiff { get; set; } = true;

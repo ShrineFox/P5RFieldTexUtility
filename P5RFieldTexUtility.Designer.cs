@@ -43,6 +43,9 @@
             this.tlp_Main = new System.Windows.Forms.TableLayoutPanel();
             this.btn_Extract = new System.Windows.Forms.Button();
             this.rtb_Log = new System.Windows.Forms.RichTextBox();
+            this.collectUniqueTexToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.chooseInputFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.chooseOriginalBINFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tlp_Main.SuspendLayout();
             this.SuspendLayout();
@@ -54,7 +57,8 @@
             this.fileToolStripMenuItem,
             this.replaceDuplicatesToolStripMenuItem,
             this.repackBINsToolStripMenuItem,
-            this.optionsToolStripMenuItem});
+            this.optionsToolStripMenuItem,
+            this.collectUniqueTexToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(598, 28);
@@ -65,7 +69,9 @@
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.chooseExportFolderToolStripMenuItem,
-            this.chooseDupesOutputFolderToolStripMenuItem});
+            this.chooseDupesOutputFolderToolStripMenuItem,
+            this.chooseInputFolderToolStripMenuItem,
+            this.chooseOriginalBINFolderToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "File";
@@ -193,6 +199,27 @@
             this.rtb_Log.TabIndex = 1;
             this.rtb_Log.Text = "";
             // 
+            // collectUniqueTexToolStripMenuItem
+            // 
+            this.collectUniqueTexToolStripMenuItem.Name = "collectUniqueTexToolStripMenuItem";
+            this.collectUniqueTexToolStripMenuItem.Size = new System.Drawing.Size(146, 24);
+            this.collectUniqueTexToolStripMenuItem.Text = "Collect Unique Tex";
+            this.collectUniqueTexToolStripMenuItem.Click += new System.EventHandler(this.CollectUniqueTex_Click);
+            // 
+            // chooseInputFolderToolStripMenuItem
+            // 
+            this.chooseInputFolderToolStripMenuItem.Name = "chooseInputFolderToolStripMenuItem";
+            this.chooseInputFolderToolStripMenuItem.Size = new System.Drawing.Size(283, 26);
+            this.chooseInputFolderToolStripMenuItem.Text = "Choose Edited Tex Folder";
+            this.chooseInputFolderToolStripMenuItem.Click += new System.EventHandler(this.ChooseInputFolder_Click);
+            // 
+            // chooseOriginalBINFolderToolStripMenuItem
+            // 
+            this.chooseOriginalBINFolderToolStripMenuItem.Name = "chooseOriginalBINFolderToolStripMenuItem";
+            this.chooseOriginalBINFolderToolStripMenuItem.Size = new System.Drawing.Size(283, 26);
+            this.chooseOriginalBINFolderToolStripMenuItem.Text = "Choose Original .BIN Folder";
+            this.chooseOriginalBINFolderToolStripMenuItem.Click += new System.EventHandler(this.ChooseOriginalBinFolder_Click);
+            // 
             // P5RFieldTexUtilityForm
             // 
             this.AllowDrop = true;
@@ -229,5 +256,8 @@
         private System.Windows.Forms.ToolStripMenuItem chk_IgnoreNameDiff;
         private System.Windows.Forms.ToolStripMenuItem chooseDupesOutputFolderToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem chk_EnableOutputLog;
+        private System.Windows.Forms.ToolStripMenuItem collectUniqueTexToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem chooseInputFolderToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem chooseOriginalBINFolderToolStripMenuItem;
     }
 }

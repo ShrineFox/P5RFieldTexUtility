@@ -77,6 +77,21 @@ namespace P5RFieldTexUtility
             Output.Log($"\nEdited Duplicates Folder has been set to:\n{folder}");
         }
 
+        private void ChooseInputFolder_Click(object sender, EventArgs e)
+        {
+            SetInputFolder();
+        }
+
+        private void SetInputFolder()
+        {
+            var folder = WinFormsDialogs.SelectFolder("Choose Input Folder...");
+            if (!Directory.Exists(folder))
+                return;
+            settings.InputEditedTexPath = folder;
+            settings.SaveJson(settings);
+            Output.Log($"\nInput Folder has been set to:\n{folder}");
+        }
+
         private void ExportFolder_Click(object sender, EventArgs e)
         {
             SetExportFolder();
@@ -85,6 +100,21 @@ namespace P5RFieldTexUtility
         private void DupesFolder_Click(object sender, EventArgs e)
         {
             SetDuplicatesFolder();
+        }
+
+        private void ChooseOriginalBinFolder_Click(object sender, EventArgs e)
+        {
+            SetOriginalBinFolder();
+        }
+
+        private void SetOriginalBinFolder()
+        {
+            var folder = WinFormsDialogs.SelectFolder("Choose OG .BIN Folder...");
+            if (!Directory.Exists(folder))
+                return;
+            settings.OriginalBINDirPath = folder;
+            settings.SaveJson(settings);
+            Output.Log($"\nOG .BIN Folder has been set to:\n{folder}");
         }
 
         private void ExtractBtn_Click(object sender, EventArgs e)
@@ -211,14 +241,14 @@ namespace P5RFieldTexUtility
 
         private void RepackBINs_Click(object sender, EventArgs e)
         {
-            if (!Directory.Exists(settings.BinExportPath))
-                SetExportFolder();
-            if (!Directory.Exists(settings.BinExportPath))
-                return;
-
             if (!Directory.Exists(settings.DuplicateExportPath))
                 SetDuplicatesFolder();
             if (!Directory.Exists(settings.DuplicateExportPath))
+                return;
+
+            if (!Directory.Exists(settings.OriginalBINDirPath))
+                SetOriginalBinFolder();
+            if (!Directory.Exists(settings.OriginalBINDirPath))
                 return;
 
             var repackedFolder = WinFormsDialogs.SelectFolder("Choose Repacked .BIN Destination Folder...");
@@ -235,12 +265,18 @@ namespace P5RFieldTexUtility
 
         private void InjectNewTexIntoPAC(string editedDupeDir, string repackedFolder)
         {
-            string originalDir = Directory.GetDirectories(settings.BinExportPath, "*", SearchOption.AllDirectories)
+            if (!Directory.GetFiles(settings.OriginalBINDirPath, "*", SearchOption.TopDirectoryOnly)
+                .Any(x => Path.GetFileName(x).Equals(Path.GetFileName(editedDupeDir))))
+            {
+                MessageBox.Show($"OG .BIN not found, skipping repack: {Path.GetFileName(editedDupeDir)}");
+                return;
+            }
+
+            string originalBin = Directory.GetFiles(settings.OriginalBINDirPath, "*", SearchOption.TopDirectoryOnly)
                 .First(x => Path.GetFileName(x).Equals(Path.GetFileName(editedDupeDir)));
 
             PAKFileSystem pak = new PAKFileSystem();
-            foreach (var file in Directory.GetFiles(originalDir))
-                pak.AddFile(Path.GetFileName(file), file, ConflictPolicy.Replace);
+            pak.Load(originalBin);
             foreach (var file in Directory.GetFiles(editedDupeDir))
                 pak.AddFile(Path.GetFileName(file), file, ConflictPolicy.Replace);
 
@@ -261,6 +297,31 @@ namespace P5RFieldTexUtility
                 Output.Logging = chk_EnableOutputLog.Checked;
                 settings.SaveJson(settings);
             }
+        }
+
+        private void CollectUniqueTex_Click(object sender, EventArgs e)
+        {
+            if (!Directory.Exists(settings.DuplicateExportPath))
+                SetDuplicatesFolder();
+            if (!Directory.Exists(settings.DuplicateExportPath))
+                return;
+
+            if (!Directory.Exists(settings.InputEditedTexPath))
+                SetInputFiles();
+            if (!Directory.Exists(settings.InputEditedTexPath))
+                return;
+
+            List<string> files = new List<string>();
+            foreach (var dds in Directory.GetFiles(settings.DuplicateExportPath, "*.dds", SearchOption.AllDirectories))
+            {
+                string ddsFileName = Path.GetFileName(dds);
+                if (!files.Any(x => Path.GetFileName(x) == ddsFileName))
+                {
+                    files.Add(ddsFileName);
+                    File.Copy(dds, Path.Combine(settings.InputEditedTexPath, ddsFileName), true);
+                }
+            }
+            Output.Log($"\nDone copying unique textures\n\tfrom: \"{settings.DuplicateExportPath}\"\b\tto:\n\t\"{settings.InputEditedTexPath}\"");
         }
     }
 }
