@@ -39,6 +39,7 @@
             this.tlp_ArchiveButtons = new System.Windows.Forms.TableLayoutPanel();
             this.btn_Repack = new System.Windows.Forms.Button();
             this.btn_Extract = new System.Windows.Forms.Button();
+            this.chk_MatchPartialNames = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tlp_Main.SuspendLayout();
             this.tlp_ArchiveButtons.SuspendLayout();
@@ -60,7 +61,8 @@
             this.utilitiesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.replaceDuplicateTexturesToolStripMenuItem,
             this.collectUniqueTexturesToolStripMenuItem,
-            this.isolateTexturesWithoutMatchesToolStripMenuItem});
+            this.isolateTexturesWithoutMatchesToolStripMenuItem,
+            this.chk_MatchPartialNames});
             this.utilitiesToolStripMenuItem.Name = "utilitiesToolStripMenuItem";
             this.utilitiesToolStripMenuItem.Size = new System.Drawing.Size(73, 24);
             this.utilitiesToolStripMenuItem.Text = "Utilities";
@@ -158,6 +160,15 @@
             this.btn_Extract.DragDrop += new System.Windows.Forms.DragEventHandler(this.ExtractBINs_DragDrop);
             this.btn_Extract.DragEnter += new System.Windows.Forms.DragEventHandler(this.DragEnter);
             // 
+            // chk_MatchPartialNames
+            // 
+            this.chk_MatchPartialNames.CheckOnClick = true;
+            this.chk_MatchPartialNames.Enabled = false;
+            this.chk_MatchPartialNames.Name = "chk_MatchPartialNames";
+            this.chk_MatchPartialNames.Size = new System.Drawing.Size(310, 26);
+            this.chk_MatchPartialNames.Text = "Match Partial Names";
+            this.chk_MatchPartialNames.CheckedChanged += new System.EventHandler(this.MatchPartialNames_CheckedChanged);
+            // 
             // P5RFieldTexUtilityForm
             // 
             this.AllowDrop = true;
@@ -191,5 +202,6 @@
         private System.Windows.Forms.ToolStripMenuItem replaceDuplicateTexturesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem collectUniqueTexturesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem isolateTexturesWithoutMatchesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem chk_MatchPartialNames;
     }
 }

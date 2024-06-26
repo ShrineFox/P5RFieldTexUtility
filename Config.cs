@@ -11,7 +11,7 @@ namespace P5RFieldTexUtility
         public string LastTexToRepackDir { get; set; } = ""; // Last known directory of Tex to repack
         public string CustomTexDir { get; set; } = "./CustomTex"; // Directory of textures to replace with
         public string ReplaceTexDir { get; set; } = ""; // Last known directory of Tex to replace
-
+        public bool MatchPartialNames { get; set; } = false; // Whether or not to match filenames fully or partially
         public void SaveJson(Config settings)
         {
             File.WriteAllText("Config.json", JsonConvert.SerializeObject(settings, Newtonsoft.Json.Formatting.Indented));

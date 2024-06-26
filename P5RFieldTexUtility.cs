@@ -18,7 +18,7 @@ namespace P5RFieldTexUtility
 {
     public partial class P5RFieldTexUtilityForm : Form
     {
-        public static Version version = new Version(1, 3, 0);
+        public static Version version = new Version(1, 3, 1);
         public static List<string> BinsToExtract = new List<string>();
         public static List<string> BinsToRepack = new List<string>();
         public Config settings = new Config();
@@ -28,6 +28,10 @@ namespace P5RFieldTexUtility
             InitializeComponent();
             this.Text += $" v{version.Major}.{version.Minor}.{version.Build}";
             settings = settings.LoadJson();
+
+            if (settings.MatchPartialNames)
+                chk_MatchPartialNames.Checked = true;
+            chk_MatchPartialNames.Enabled = true;
 
             Output.Logging = true;
             Output.LogControl = rtb_Log;
@@ -255,10 +259,9 @@ namespace P5RFieldTexUtility
                 }
                 else
                     Output.Log($"\nCould not open archive: \"{Path.GetFileName(file)}\"");
-
-                Output.Log($"\nDone extracting files from archives.");
-                WinFormsDialogs.ShowMessageBox("Done Extracting Files", "All files have been extracted!", MessageBoxButtons.OK);
             }
+            Output.Log($"\nDone extracting files from archives.");
+            WinFormsDialogs.ShowMessageBox("Done Extracting Files", "All files have been extracted!", MessageBoxButtons.OK);
         }
 
         private void RepackBinTexturesFromFolders()
@@ -283,11 +286,18 @@ namespace P5RFieldTexUtility
             var filesToReplace = Directory.GetFiles(settings.ReplaceTexDir, "*.dds", SearchOption.AllDirectories);
             var customTex = Directory.GetFiles(settings.CustomTexDir, "*.dds", SearchOption.AllDirectories);
 
-            foreach (var fileToReplace in filesToReplace.Where(x => customTex.Any(y => Path.GetFileName(y) == Path.GetFileName(x))))
+            foreach (var fileToReplace in filesToReplace.Where(x => customTex.Any(y => Path.GetFileNameWithoutExtension(x).Contains(Path.GetFileNameWithoutExtension(y)))))
             {
-                var fileToReplaceWith = customTex.First(x => Path.GetFileName(x) == Path.GetFileName(fileToReplace));
-                File.Copy(fileToReplaceWith, fileToReplace, true);
-                Output.Log($"\nCopied duplicate file to:\n\t\"{fileToReplace}\"");
+                var fileToReplaceWith = customTex.First(x => Path.GetFileNameWithoutExtension(fileToReplace).Contains(Path.GetFileNameWithoutExtension(x)));
+                if (!settings.MatchPartialNames && Path.GetFileName(fileToReplace) != Path.GetFileName(fileToReplaceWith))
+                {
+                    // Skipping since filenames don't match completely
+                }
+                else
+                {
+                    File.Copy(fileToReplaceWith, fileToReplace, true);
+                    Output.Log($"\nCopied duplicate file to:\n\t\"{fileToReplace}\"");
+                }
             }
             Output.Log($"\nDone replacing textures from: \"{settings.ReplaceTexDir}\"\n" +
                 $"\tin: \"{settings.CustomTexDir}\"");
@@ -298,11 +308,19 @@ namespace P5RFieldTexUtility
             List<string> files = new List<string>();
             foreach (var dds in Directory.GetFiles(textureSearchDir, "*.dds", SearchOption.AllDirectories))
             {
-                string ddsFileName = Path.GetFileName(dds);
-                if (!files.Any(x => Path.GetFileName(x) == ddsFileName))
+                string ddsFileName = Path.GetFileNameWithoutExtension(dds);
+                if (!files.Any(x => Path.GetFileNameWithoutExtension(x).Contains(ddsFileName)))
                 {
-                    files.Add(ddsFileName);
-                    File.Copy(dds, Path.Combine(textureOutputDir, ddsFileName), true);
+                    var matchingFile = files.First(x => Path.GetFileNameWithoutExtension(x).Contains(ddsFileName));
+                    if (!settings.MatchPartialNames && ddsFileName != Path.GetFileNameWithoutExtension(matchingFile))
+                    {
+                        // Skipping since filenames don't match completely
+                    }
+                    else
+                    {
+                        files.Add(ddsFileName);
+                        File.Copy(matchingFile, Path.Combine(textureOutputDir, ddsFileName), true);
+                    }
                 }
             }
             Output.Log($"\nDone copying unique textures\n\tfrom: \"{textureSearchDir}\"\b\tto:\n\t\"{textureOutputDir}\"");
@@ -310,9 +328,22 @@ namespace P5RFieldTexUtility
 
         private void IsolateeUnmatchedTex(string customTexDir, string matchingTexInputDir, string matchingTexOutputDir)
         {
-            foreach (var file in Directory.GetFiles(matchingTexInputDir, "*.dds", SearchOption.AllDirectories).Where(x => 
-                !Directory.GetFiles(customTexDir, "*.dds", SearchOption.AllDirectories)
-                    .Any(y => Path.GetFileName(y).Equals(Path.GetFileName(x)))))
+            List<string> files = new List<string>();
+
+            if (settings.MatchPartialNames)
+            {
+                files = Directory.GetFiles(matchingTexInputDir, "*.dds", SearchOption.AllDirectories).Where(x =>
+                    !Directory.GetFiles(customTexDir, "*.dds", SearchOption.AllDirectories)
+                        .Any(y => Path.GetFileNameWithoutExtension(x).Contains(Path.GetFileNameWithoutExtension(y)))).ToList();
+            }
+            else
+            {
+                files = Directory.GetFiles(matchingTexInputDir, "*.dds", SearchOption.AllDirectories).Where(x =>
+                    !Directory.GetFiles(customTexDir, "*.dds", SearchOption.AllDirectories)
+                        .Any(y => Path.GetFileNameWithoutExtension(x) == Path.GetFileNameWithoutExtension(y))).ToList();
+            }
+
+            foreach (var file in files)
             {
                 var newDestination = file.Replace(Path.GetDirectoryName(Path.GetDirectoryName(file)), matchingTexOutputDir);
                 Directory.CreateDirectory(Path.GetDirectoryName(newDestination));
@@ -320,6 +351,12 @@ namespace P5RFieldTexUtility
                 Output.Log($"\nMoving non-matching textures\n\tfrom: \"{file}\"\b\tto:\n\t\"{newDestination}\"");
             }
             Output.Log($"\nDone moving non-matching textures\n\tfrom: \"{matchingTexInputDir}\"\b\tto:\n\t\"{matchingTexOutputDir}\"");
+        }
+
+        private void MatchPartialNames_CheckedChanged(object sender, EventArgs e)
+        {
+            settings.MatchPartialNames = chk_MatchPartialNames.Checked;
+            settings.SaveJson(settings);
         }
     }
 }
