@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,8 +18,9 @@ namespace P5RFieldTexUtility
 {
     public partial class P5RFieldTexUtilityForm : Form
     {
-        public static Version version = new Version(1, 2, 1);
-        public static List<string> InputFiles = new List<string>();
+        public static Version version = new Version(1, 3, 0);
+        public static List<string> BinsToExtract = new List<string>();
+        public static List<string> BinsToRepack = new List<string>();
         public Config settings = new Config();
 
         public P5RFieldTexUtilityForm()
@@ -26,114 +28,89 @@ namespace P5RFieldTexUtility
             InitializeComponent();
             this.Text += $" v{version.Major}.{version.Minor}.{version.Build}";
             settings = settings.LoadJson();
-            ApplySettingsToFormOptions();
 
             Output.Logging = true;
             Output.LogControl = rtb_Log;
-            Output.Log($"Export folder set to \"{settings.BinExportPath}\" by default.");
         }
 
-        private void ApplySettingsToFormOptions()
-        {
-            // Reflect values from config file in checkbox checked states
-            chk_IgnoreBinaryDiff.Checked = settings.IgnoreBinaryDiff;
-            chk_OverwriteSameName.Checked = settings.OverwriteSameName;
-            chk_IgnoreNameDiff.Checked = settings.IgnoreNameDiff;
-            chk_EnableOutputLog.Checked = settings.EnableOutputLog;
-            chk_ConfirmOperations.Checked = settings.ConfirmOperations;
-            chk_UseBINsForDupeReplacement.Checked = settings.UseBINsForDupeReplacement;
+        /* Set Paths Using Dialogs and Save to Settings Json */
 
-            // Values can be changed from the CheckedChanged event once they're enabled here
-            chk_IgnoreBinaryDiff.Enabled = true;
-            chk_OverwriteSameName.Enabled = true;
-            chk_IgnoreNameDiff.Enabled = true;
-            chk_EnableOutputLog.Enabled = true;
-            chk_ConfirmOperations.Enabled = true;
-            chk_UseBINsForDupeReplacement.Enabled = true;
+        private bool SetBinsToExtract()
+        {
+            var files = WinFormsDialogs.SelectFile("Choose .BINs to Extract...", true, 
+                defaultDirectory: settings.LastInputExtractedBinDir);
+
+            if (files.Count <= 0 || string.IsNullOrEmpty(files[0]))
+                return false;
+            BinsToExtract = files;
+            settings.LastInputExtractedBinDir = Path.GetDirectoryName(files.Last());
+            Output.Log("\n.BINs to extract have been set.");
+            return true;
         }
 
-        private void SetInputFiles()
+        private bool SetBinsToRepack()
         {
-            var files = WinFormsDialogs.SelectFile("Choose Archives to Extract...", true);
-            if (files.Count <= 0)
-                return;
-            InputFiles = files;
-            Output.Log("\nInput files have been chosen via file selection.");
-        }
+            var folder = WinFormsDialogs.SelectFolder("Choose Directory of Folders to Repack into .BINs...",
+                defaultDirectory: settings.LastTexToRepackDir);
 
-        private void SetExportFolder()
-        {
-            var folder = WinFormsDialogs.SelectFolder("Choose Export Folder...");
             if (!Directory.Exists(folder))
-                return;
-            settings.BinExportPath = folder;
-            settings.SaveJson(settings);
-            Output.Log($"\nExport Folder has been set to:\n{folder}");
+                return false;
+            BinsToExtract = Directory.GetDirectories(folder, "*.BIN", SearchOption.TopDirectoryOnly).ToList();
+            settings.LastTexToRepackDir = folder;
+            Output.Log($"\n.BINs to repack have been set from: \"{folder}\"");
+            return true;
         }
 
-        private void SetDuplicatesFolder()
+        private bool SetExtractedBinsOutputDir()
         {
-            var folder = WinFormsDialogs.SelectFolder("Choose Output Folder for Edited Duplicates...");
+            var folder = WinFormsDialogs.SelectFolder("Choose Extracted .BIN Destination...", 
+                settings.ExtractedOutputDir);
+
             if (!Directory.Exists(folder))
-                return;
-            settings.DuplicateExportPath = folder;
+                return false;
+            settings.ExtractedOutputDir = folder;
             settings.SaveJson(settings);
-            Output.Log($"\nEdited Duplicates Folder has been set to:\n{folder}");
+            Output.Log($"\nExtracted .BIN Folder has been set to: \"{folder}\"");
+            return true;
         }
 
-        private void ChooseInputFolder_Click(object sender, EventArgs e)
+        private bool SetRepackedBinDir()
         {
-            SetInputFolder();
-        }
+            var folder = WinFormsDialogs.SelectFolder("Choose Repacked .BIN Destination...", 
+                settings.RepackedBinDir);
 
-        private void SetInputFolder()
-        {
-            var folder = WinFormsDialogs.SelectFolder("Choose Input Folder...");
             if (!Directory.Exists(folder))
-                return;
-            settings.InputEditedTexPath = folder;
+                return false;
+            settings.RepackedBinDir = folder;
             settings.SaveJson(settings);
-            Output.Log($"\nInput Folder has been set to:\n{folder}");
+            Output.Log($"\nRepacked .BIN Folder has been set to:\n{folder}");
+            return true;
         }
 
-        private void ExportFolder_Click(object sender, EventArgs e)
+        private bool SetCustomTexDir()
         {
-            SetExportFolder();
-        }
+            var folder = WinFormsDialogs.SelectFolder("Choose Folder with Custom Textures to Replace With...",
+                settings.CustomTexDir);
 
-        private void DupesFolder_Click(object sender, EventArgs e)
-        {
-            SetDuplicatesFolder();
-        }
-
-        private void ChooseOriginalBinFolder_Click(object sender, EventArgs e)
-        {
-            SetOriginalBinFolder();
-        }
-
-        private void SetOriginalBinFolder()
-        {
-            var folder = WinFormsDialogs.SelectFolder("Choose OG .BIN Folder...");
             if (!Directory.Exists(folder))
-                return;
-            settings.OriginalBINDirPath = folder;
+                return false;
+            settings.CustomTexDir = folder;
             settings.SaveJson(settings);
-            Output.Log($"\nOG .BIN Folder has been set to:\n{folder}");
+            Output.Log($"\nFolder with Custom Textures to Replace With has been set to:\n{folder}");
+            return true;
         }
 
-        private void ExtractBtn_Click(object sender, EventArgs e)
+        private bool SetReplaceTexDir()
         {
-            SetInputFiles();
-            ExtractToExportFolder();
-            WinFormsDialogs.ShowMessageBox("Done Extracting Files","All files have been extracted!", MessageBoxButtons.OK);
-        }
+            var folder = WinFormsDialogs.SelectFolder("Choose Folder to Replace Textures In...",
+                settings.ReplaceTexDir);
 
-        private void ExtractBtn_DragDrop(object sender, DragEventArgs e)
-        {
-            var data = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-            InputFiles = data.ToList();
-            Output.Log("\nInput files have been chosen via drag and drop.");
-            ExtractToExportFolder();
+            if (!Directory.Exists(folder))
+                return false;
+            settings.ReplaceTexDir = folder;
+            settings.SaveJson(settings);
+            Output.Log($"\nFolder With Textures to Replace has been set to:\n{folder}");
+            return true;
         }
 
         private void DragEnter(object sender, DragEventArgs e)
@@ -141,14 +118,122 @@ namespace P5RFieldTexUtility
             e.Effect = DragDropEffects.Move;
         }
 
-        private void ExtractToExportFolder()
+        /* Button Click Actions */
+
+        private void ExtractBINs_Click(object sender, EventArgs e)
         {
-            foreach (var file in InputFiles)
+            // Have user select desired .BINs to extract
+            if (!SetBinsToExtract())
+                return; // quit if user cancels file selection
+
+            ExtractBinTexturesToFolder();
+        }
+
+        private void RepackBINs_Click(object sender, EventArgs e)
+        {
+            // Have user select desired folders to repack into .BIN
+            if (!SetBinsToRepack())
+                return; // quit if user cancels file selection
+
+            // Have user select desired folder to save repacked .BINs to
+            if (!SetRepackedBinDir())
+                return; // quit if user cancels file selection
+
+            RepackBinTexturesFromFolders();
+        }
+
+        private void ReplaceTextures_Click(object sender, EventArgs e)
+        {
+            // Have user select folder with textures to replace with
+            if (!SetCustomTexDir())
+                return; // quit if user cancels file selection
+
+            // Have user select folder with textures to replace
+            if (!SetReplaceTexDir())
+                return; // quit if user cancels file selection
+
+            ReplaceTextures();
+        }
+
+        private void CollectUniqueTex_Click(object sender, EventArgs e)
+        {
+            string textureSearchDir = WinFormsDialogs.SelectFolder("Choose Folder of Textures to Narrow Down...");
+            if (!Directory.Exists(textureSearchDir))
+                return;
+
+            string uniqueTexOutputDir = WinFormsDialogs.SelectFolder("Choose Folder to Save Unique Textures To...");
+            if (!Directory.Exists(uniqueTexOutputDir))
+                return;
+
+            CollectUniqueTex(textureSearchDir, uniqueTexOutputDir);
+        }
+
+        private void IsolateUnmatchedTex_Click(object sender, EventArgs e)
+        {
+            string textureSearchDir = WinFormsDialogs.SelectFolder("Choose Folder of Custom Textures to match...");
+            if (!Directory.Exists(textureSearchDir))
+                return;
+
+            string matchingTexInputDir = WinFormsDialogs.SelectFolder("Choose Folder to Remove Non-Matching Textures From...");
+            if (!Directory.Exists(matchingTexInputDir))
+                return;
+
+            string matchingTexOutputDir = WinFormsDialogs.SelectFolder("Choose Folder to Move Non-Matching Textures To...");
+            if (!Directory.Exists(matchingTexOutputDir))
+                return;
+
+            IsolateeUnmatchedTex(textureSearchDir, matchingTexInputDir, matchingTexOutputDir);
+        }
+
+        /* Drag/Drop Actions */
+        private void ExtractBINs_DragDrop(object sender, DragEventArgs e)
+        {
+            var data = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            var bins = data.Where(x => x.ToUpper().EndsWith(".BIN")).ToList();
+            if (bins.Count <= 0)
+                return;
+
+            BinsToExtract = bins;
+            settings.LastInputExtractedBinDir = Path.GetDirectoryName(bins.Last());
+            settings.SaveJson(settings);
+            Output.Log("\nBINs to extract have been chosen via drag and drop.");
+
+            // Have user select desired .BIN extraction output folder
+            if (!SetExtractedBinsOutputDir())
+                return; // quit if user cancels file selection
+
+            ExtractBinTexturesToFolder();
+        }
+
+        private void RepackBINs_DragDrop(object sender, DragEventArgs e)
+        {
+            var data = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            if (data.Length <= 0)
+                return;
+
+            BinsToRepack = data.ToList();
+            settings.LastTexToRepackDir = Path.GetDirectoryName(data.Last());
+            settings.SaveJson(settings);
+            Output.Log("\nFolders to repack into .BINs have been chosen via drag and drop.");
+
+
+            // Have user select desired folder to save repacked .BINs to
+            if (!SetRepackedBinDir())
+                return; // quit if user cancels file selection
+
+            RepackBinTexturesFromFolders();
+        }
+
+
+        /* File Operations */
+        private void ExtractBinTexturesToFolder()
+        {
+            foreach (var file in BinsToExtract)
             {
                 PAKFileSystem pak = new PAKFileSystem();
                 if (PAKFileSystem.TryOpen(file, out pak))
                 {
-                    string outputFolder = settings.BinExportPath + Path.DirectorySeparatorChar + Path.GetFileName(file);
+                    string outputFolder = settings.ExtractedOutputDir + Path.DirectorySeparatorChar + Path.GetFileName(file);
                     Output.Log($"\nExtracting all files in \"{Path.GetFileName(file)}\" to:\n\t\"{outputFolder}\"");
 
                     List<string> pakFiles = new List<string>();
@@ -166,267 +251,75 @@ namespace P5RFieldTexUtility
                             pakFiles.Add(outputFile);
                         }
                     }
+                    Output.Log($"\nExtracted files from: \"{Path.GetFileName(file)}\"");
                 }
                 else
                     Output.Log($"\nCould not open archive: \"{Path.GetFileName(file)}\"");
 
                 Output.Log($"\nDone extracting files from archives.");
+                WinFormsDialogs.ShowMessageBox("Done Extracting Files", "All files have been extracted!", MessageBoxButtons.OK);
             }
         }
 
-        private void ReplaceDuplicates_Click(object sender, EventArgs e)
+        private void RepackBinTexturesFromFolders()
         {
-            // Get path where discovered duplicates will be exported to using their replacement edited texture file
-            if (!Directory.Exists(settings.DuplicateExportPath))
-                SetDuplicatesFolder();
-            if (!Directory.Exists(settings.DuplicateExportPath))
-                return;
-
-            var editedFiles = WinFormsDialogs.SelectFile("Choose Edited Extracted File(s)...", true);
-            if (editedFiles.Count <= 0)
-                return;
-            Output.Log("\nEdited Extracted Files have been chosen.");
-
-            if (!settings.UseBINsForDupeReplacement)
+            foreach (var folder in BinsToRepack)
             {
-                ReplaceDupesBasedOnExtractedTex(editedFiles);
-            }
-            else
-            {
-                ReplaceDupesBasedOnBins(editedFiles);
-            }
-            
-            Output.Log($"\nDone copying edits to duplicate files folder.");
-        }
-
-        private void ReplaceDupesBasedOnBins(List<string> editedFiles)
-        {
-            // Get path original unedited texture .BINs
-            if (!Directory.Exists(settings.OriginalBINDirPath))
-                SetOriginalBinFolder();
-            if (!Directory.Exists(settings.OriginalBINDirPath))
-                return;
-
-            if (settings.ConfirmOperations)
-            {
-                if (!WinFormsDialogs.ShowMessageBox("Confirm Replace Duplicates?",
-                    "If you proceed, edited textures you just selected\n" +
-                    "will be copied to new folders in \n" +
-                    $"\"{settings.DuplicateExportPath}\" (duplicateExportPath)\n" +
-                    "if they match the filename of a texture from a .BIN in\n" +
-                    $"\"{settings.OriginalBINDirPath}\" (originalBINDirectory)."))
-                    return;
-            }
-
-            var ogBins = Directory.GetFiles(settings.OriginalBINDirPath, "*.BIN", SearchOption.TopDirectoryOnly);
-
-            foreach (var editedFile in editedFiles)
-            {
-                foreach (var bin in ogBins)
+                PAKFileSystem pak = new PAKFileSystem();
+                foreach (var file in Directory.GetFiles(folder))
                 {
-                    PAKFileSystem pak = new PAKFileSystem();
-                    pak.Load(bin);
-                    foreach (var tex in pak.EnumerateFiles().Where(x => x.ToUpper() == Path.GetFileName(editedFile.ToUpper())))
-                    {
-                        // Create new output path for edited file using name/foldername of identical unedited file
-                        string newPath = Path.Combine(settings.DuplicateExportPath, Path.GetFileName(bin), Path.GetFileName(editedFile));
-                        Directory.CreateDirectory(Path.GetDirectoryName(newPath));
-                        if (settings.OverwriteSameName || !File.Exists(newPath))
-                        {
-                            File.Copy(editedFile, newPath, settings.OverwriteSameName);
-                            Output.Log($"\nCopied duplicate file to:\n\t\"{newPath}\"");
-                        }
-                        else
-                        {
-                            Output.Log($"\nSKIPPED replacing file since it already exists:\n\t\"{newPath}\"");
-                        }
-                    }
+                    pak.AddFile(Path.GetFileName(file), file, ConflictPolicy.Replace);
                 }
+                string outPath = Path.Combine(settings.RepackedBinDir, Path.GetFileName(folder));
+                pak.Save(outPath);
+                Output.Log($"\nSaved repacked .BIN to: \"{outPath}\"");
             }
+            Output.Log($"\nDone repacking textures from: \"{settings.LastTexToRepackDir}\"\n" +
+                $"\tto: \"{settings.RepackedBinDir}\"");
         }
 
-        private void ReplaceDupesBasedOnExtractedTex(List<string> editedFiles)
+        private void ReplaceTextures()
         {
-            // Get path original unedited textures were exported to from .BINs
-            if (!Directory.Exists(settings.BinExportPath))
-                SetExportFolder();
-            if (!Directory.Exists(settings.BinExportPath))
-                return;
+            var filesToReplace = Directory.GetFiles(settings.ReplaceTexDir, "*.dds", SearchOption.AllDirectories);
+            var customTex = Directory.GetFiles(settings.CustomTexDir, "*.dds", SearchOption.AllDirectories);
 
-            if (settings.ConfirmOperations)
+            foreach (var fileToReplace in filesToReplace.Where(x => customTex.Any(y => Path.GetFileName(y) == Path.GetFileName(x))))
             {
-                if (!WinFormsDialogs.ShowMessageBox("Confirm Replace Duplicates?",
-                    "If you proceed, edited textures you just selected\n" +
-                    "will be copied to new folders in \n" +
-                    $"\"{settings.DuplicateExportPath}\" (duplicateExportPath)\n" +
-                    "if they match the filename of a texture from\n" +
-                    $"\"{settings.BinExportPath}\" (binExportPath)."))
-                    return;
+                var fileToReplaceWith = customTex.First(x => Path.GetFileName(x) == Path.GetFileName(fileToReplace));
+                File.Copy(fileToReplaceWith, fileToReplace, true);
+                Output.Log($"\nCopied duplicate file to:\n\t\"{fileToReplace}\"");
             }
-
-            var uneditedExportFiles = Directory.GetFiles(settings.BinExportPath, "*", SearchOption.AllDirectories);
-
-            foreach (var editedFile in editedFiles)
-            {
-                // Find original file from exported folder that matches edited file's name...
-                if (uneditedExportFiles.Any(x => Path.GetFileName(x).ToLower().Equals(Path.GetFileName(editedFile).ToLower())))
-                {
-                    // Get file info for original file with matching name
-                    var originalFile = uneditedExportFiles.First(x => Path.GetFileName(x).ToLower().Equals(Path.GetFileName(editedFile).ToLower()));
-                    FileInfo originalFileInfo = new FileInfo(originalFile);
-
-                    // For each file in unedited file export folder...
-                    foreach (var exportedFile in uneditedExportFiles)
-                    {
-                        FileInfo exportedFileInfo = new FileInfo(exportedFile);
-
-                        // If file has the same name as the original file...
-                        // (unless ignore different names option is enabled)
-                        if (settings.IgnoreNameDiff ||
-                            Path.GetFileName(originalFile).ToLower() == Path.GetFileName(exportedFile).ToLower())
-                        {
-                            // If file has the same size as the original matching name file...
-                            // (unless ignore binary differences option is enabled)
-                            if (settings.IgnoreBinaryDiff ||
-                                originalFileInfo.Length == exportedFileInfo.Length)
-                            {
-                                // If files are 100% identical bytewise...
-                                // (unless ignore binary differences option is enabled)
-                                if (settings.IgnoreBinaryDiff ||
-                                    FileSys.AreFilesIdentical(exportedFile, originalFile))
-                                {
-                                    // Create new output path for edited file using name/foldername of identical unedited file
-                                    string newPath = Path.Combine(settings.DuplicateExportPath, Path.GetFileName(Path.GetDirectoryName(exportedFile)), Path.GetFileName(exportedFile));
-                                    Directory.CreateDirectory(Path.GetDirectoryName(newPath));
-                                    if (settings.OverwriteSameName || !File.Exists(newPath))
-                                    {
-                                        File.Copy(editedFile, newPath, settings.OverwriteSameName);
-                                        Output.Log($"\nCopied duplicate file to:\n\t\"{newPath}\"");
-                                    }
-                                    else
-                                    {
-                                        Output.Log($"\nSKIPPED replacing file since it already exists:\n\t\"{newPath}\"");
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            Output.Log($"\nDone replacing textures from: \"{settings.ReplaceTexDir}\"\n" +
+                $"\tin: \"{settings.CustomTexDir}\"");
         }
 
-        private void RepackBINs_Click(object sender, EventArgs e)
+        private void CollectUniqueTex(string textureSearchDir, string textureOutputDir)
         {
-            if (!Directory.Exists(settings.DuplicateExportPath))
-                SetDuplicatesFolder();
-            if (!Directory.Exists(settings.DuplicateExportPath))
-                return;
-
-            if (!Directory.Exists(settings.OriginalBINDirPath))
-                SetOriginalBinFolder();
-            if (!Directory.Exists(settings.OriginalBINDirPath))
-                return;
-
-            var repackedFolder = WinFormsDialogs.SelectFolder("Choose Repacked .BIN Destination Folder...");
-            if (!Directory.Exists(repackedFolder))
-                return;
-            Output.Log($"\nRepacked .BIN Destination Folder has been chosen:\n\t{repackedFolder}");
-
-            if (settings.ConfirmOperations)
-            {
-                bool response = WinFormsDialogs.ShowMessageBox("Confirm Repack .BINs?",
-                    "If you proceed, edited textures in each folder in\n" +
-                    $"\"{settings.DuplicateExportPath}\" (duplicateExportPath)\n" +
-                    "will replace existing files in .BINs from\n" +
-                    $"\"{settings.OriginalBINDirPath}\" (originalBINDirPath)\n" +
-                    "and saved to the output directory you just specified.");
-                if (!response)
-                {
-                    return;
-                }
-            }
-
-            var dirs = Directory.GetDirectories(settings.DuplicateExportPath);
-
-            foreach (var dir in dirs.Where(x => x.EndsWith(".BIN")))
-            {
-                InjectNewTexIntoPAC(dir, repackedFolder);
-            }
-            Output.Log($"\nDone repacking .BIN files.");
-        }
-
-        private void InjectNewTexIntoPAC(string editedDupeDir, string repackedFolder)
-        {
-            if (!Directory.GetFiles(settings.OriginalBINDirPath, "*", SearchOption.TopDirectoryOnly)
-                .Any(x => Path.GetFileName(x).Equals(Path.GetFileName(editedDupeDir))))
-            {
-                MessageBox.Show($"OG .BIN not found, skipping repack: {Path.GetFileName(editedDupeDir)}");
-                return;
-            }
-
-            string originalBin = Directory.GetFiles(settings.OriginalBINDirPath, "*", SearchOption.TopDirectoryOnly)
-                .First(x => Path.GetFileName(x).Equals(Path.GetFileName(editedDupeDir)));
-
-            PAKFileSystem pak = new PAKFileSystem();
-            pak.Load(originalBin);
-            foreach (var file in Directory.GetFiles(editedDupeDir))
-                pak.AddFile(Path.GetFileName(file), file, ConflictPolicy.Replace);
-
-            string binOutPath = Path.Combine(repackedFolder, Path.GetFileName(editedDupeDir));
-            pak.Save(binOutPath);
-            Output.Log($"\nRepacked .BIN to:\n\t\"{binOutPath}\"");
-        }
-
-        private void CheckedChanged(object sender, EventArgs e)
-        {
-            var chk = (ToolStripMenuItem)sender;
-            if (chk.Enabled)
-            {
-                settings.IgnoreBinaryDiff = chk_IgnoreBinaryDiff.Checked;
-                settings.OverwriteSameName = chk_OverwriteSameName.Checked;
-                settings.IgnoreNameDiff = chk_IgnoreNameDiff.Checked;
-                settings.EnableOutputLog = chk_EnableOutputLog.Checked;
-                settings.ConfirmOperations = chk_ConfirmOperations.Checked;
-                settings.UseBINsForDupeReplacement = chk_UseBINsForDupeReplacement.Checked;
-                Output.Logging = chk_EnableOutputLog.Checked;
-                settings.SaveJson(settings);
-            }
-        }
-
-        private void CollectUniqueTex_Click(object sender, EventArgs e)
-        {
-            if (!Directory.Exists(settings.DuplicateExportPath))
-                SetDuplicatesFolder();
-            if (!Directory.Exists(settings.DuplicateExportPath))
-                return;
-
-            if (!Directory.Exists(settings.InputEditedTexPath))
-                SetInputFiles();
-            if (!Directory.Exists(settings.InputEditedTexPath))
-                return;
-
-            if (settings.ConfirmOperations)
-            {
-                if (!WinFormsDialogs.ShowMessageBox("Confirm Collect Edited Tex?",
-                    "If you proceed, edited textures from\n" +
-                    $"\"{settings.DuplicateExportPath}\" (duplicateExportPath)\n" +
-                    "will be copied to\n" +
-                    $"\"{settings.InputEditedTexPath}\" (inputEditedTexPath)\n" +
-                    "overwriting an existing file if it exists there."))
-                    return;
-            }
-
             List<string> files = new List<string>();
-            foreach (var dds in Directory.GetFiles(settings.DuplicateExportPath, "*.dds", SearchOption.AllDirectories))
+            foreach (var dds in Directory.GetFiles(textureSearchDir, "*.dds", SearchOption.AllDirectories))
             {
                 string ddsFileName = Path.GetFileName(dds);
                 if (!files.Any(x => Path.GetFileName(x) == ddsFileName))
                 {
                     files.Add(ddsFileName);
-                    File.Copy(dds, Path.Combine(settings.InputEditedTexPath, ddsFileName), true);
+                    File.Copy(dds, Path.Combine(textureOutputDir, ddsFileName), true);
                 }
             }
-            Output.Log($"\nDone copying unique textures\n\tfrom: \"{settings.DuplicateExportPath}\"\b\tto:\n\t\"{settings.InputEditedTexPath}\"");
+            Output.Log($"\nDone copying unique textures\n\tfrom: \"{textureSearchDir}\"\b\tto:\n\t\"{textureOutputDir}\"");
+        }
+
+        private void IsolateeUnmatchedTex(string customTexDir, string matchingTexInputDir, string matchingTexOutputDir)
+        {
+            foreach (var file in Directory.GetFiles(matchingTexInputDir, "*.dds", SearchOption.AllDirectories).Where(x => 
+                !Directory.GetFiles(customTexDir, "*.dds", SearchOption.AllDirectories)
+                    .Any(y => Path.GetFileName(y).Equals(Path.GetFileName(x)))))
+            {
+                var newDestination = file.Replace(Path.GetDirectoryName(Path.GetDirectoryName(file)), matchingTexOutputDir);
+                Directory.CreateDirectory(Path.GetDirectoryName(newDestination));
+                File.Move(file, newDestination);
+                Output.Log($"\nMoving non-matching textures\n\tfrom: \"{file}\"\b\tto:\n\t\"{newDestination}\"");
+            }
+            Output.Log($"\nDone moving non-matching textures\n\tfrom: \"{matchingTexInputDir}\"\b\tto:\n\t\"{matchingTexOutputDir}\"");
         }
     }
 }

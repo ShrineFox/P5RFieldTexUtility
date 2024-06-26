@@ -30,167 +30,61 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(P5RFieldTexUtilityForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.chooseExportFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.chooseDupesOutputFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.replaceDuplicatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.repackBINsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.chk_IgnoreBinaryDiff = new System.Windows.Forms.ToolStripMenuItem();
-            this.chk_OverwriteSameName = new System.Windows.Forms.ToolStripMenuItem();
-            this.chk_IgnoreNameDiff = new System.Windows.Forms.ToolStripMenuItem();
-            this.chk_EnableOutputLog = new System.Windows.Forms.ToolStripMenuItem();
-            this.tlp_Main = new System.Windows.Forms.TableLayoutPanel();
-            this.btn_Extract = new System.Windows.Forms.Button();
+            this.utilitiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.replaceDuplicateTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.collectUniqueTexturesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.isolateTexturesWithoutMatchesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rtb_Log = new System.Windows.Forms.RichTextBox();
-            this.collectUniqueTexToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.chooseInputFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.chooseOriginalBINFolderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.chk_ConfirmOperations = new System.Windows.Forms.ToolStripMenuItem();
-            this.chk_UseBINsForDupeReplacement = new System.Windows.Forms.ToolStripMenuItem();
+            this.tlp_Main = new System.Windows.Forms.TableLayoutPanel();
+            this.tlp_ArchiveButtons = new System.Windows.Forms.TableLayoutPanel();
+            this.btn_Repack = new System.Windows.Forms.Button();
+            this.btn_Extract = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.tlp_Main.SuspendLayout();
+            this.tlp_ArchiveButtons.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
             // 
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.replaceDuplicatesToolStripMenuItem,
-            this.repackBINsToolStripMenuItem,
-            this.optionsToolStripMenuItem,
-            this.collectUniqueTexToolStripMenuItem});
+            this.utilitiesToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(598, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
-            // fileToolStripMenuItem
+            // utilitiesToolStripMenuItem
             // 
-            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.chooseExportFolderToolStripMenuItem,
-            this.chooseDupesOutputFolderToolStripMenuItem,
-            this.chooseInputFolderToolStripMenuItem,
-            this.chooseOriginalBINFolderToolStripMenuItem});
-            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
-            this.fileToolStripMenuItem.Text = "File";
+            this.utilitiesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.replaceDuplicateTexturesToolStripMenuItem,
+            this.collectUniqueTexturesToolStripMenuItem,
+            this.isolateTexturesWithoutMatchesToolStripMenuItem});
+            this.utilitiesToolStripMenuItem.Name = "utilitiesToolStripMenuItem";
+            this.utilitiesToolStripMenuItem.Size = new System.Drawing.Size(73, 24);
+            this.utilitiesToolStripMenuItem.Text = "Utilities";
             // 
-            // chooseExportFolderToolStripMenuItem
+            // replaceDuplicateTexturesToolStripMenuItem
             // 
-            this.chooseExportFolderToolStripMenuItem.Name = "chooseExportFolderToolStripMenuItem";
-            this.chooseExportFolderToolStripMenuItem.Size = new System.Drawing.Size(283, 26);
-            this.chooseExportFolderToolStripMenuItem.Text = "Choose .BIN Export Folder";
-            this.chooseExportFolderToolStripMenuItem.Click += new System.EventHandler(this.ExportFolder_Click);
+            this.replaceDuplicateTexturesToolStripMenuItem.Name = "replaceDuplicateTexturesToolStripMenuItem";
+            this.replaceDuplicateTexturesToolStripMenuItem.Size = new System.Drawing.Size(310, 26);
+            this.replaceDuplicateTexturesToolStripMenuItem.Text = "Replace With Custom Textures";
+            this.replaceDuplicateTexturesToolStripMenuItem.Click += new System.EventHandler(this.ReplaceTextures_Click);
             // 
-            // chooseDupesOutputFolderToolStripMenuItem
+            // collectUniqueTexturesToolStripMenuItem
             // 
-            this.chooseDupesOutputFolderToolStripMenuItem.Name = "chooseDupesOutputFolderToolStripMenuItem";
-            this.chooseDupesOutputFolderToolStripMenuItem.Size = new System.Drawing.Size(283, 26);
-            this.chooseDupesOutputFolderToolStripMenuItem.Text = "Choose Dupes Output Folder";
-            this.chooseDupesOutputFolderToolStripMenuItem.Click += new System.EventHandler(this.DupesFolder_Click);
+            this.collectUniqueTexturesToolStripMenuItem.Name = "collectUniqueTexturesToolStripMenuItem";
+            this.collectUniqueTexturesToolStripMenuItem.Size = new System.Drawing.Size(310, 26);
+            this.collectUniqueTexturesToolStripMenuItem.Text = "Collect Unique Textures";
+            this.collectUniqueTexturesToolStripMenuItem.Click += new System.EventHandler(this.CollectUniqueTex_Click);
             // 
-            // replaceDuplicatesToolStripMenuItem
+            // isolateTexturesWithoutMatchesToolStripMenuItem
             // 
-            this.replaceDuplicatesToolStripMenuItem.Name = "replaceDuplicatesToolStripMenuItem";
-            this.replaceDuplicatesToolStripMenuItem.Size = new System.Drawing.Size(159, 24);
-            this.replaceDuplicatesToolStripMenuItem.Text = "Replace Duplicates...";
-            this.replaceDuplicatesToolStripMenuItem.Click += new System.EventHandler(this.ReplaceDuplicates_Click);
-            // 
-            // repackBINsToolStripMenuItem
-            // 
-            this.repackBINsToolStripMenuItem.Name = "repackBINsToolStripMenuItem";
-            this.repackBINsToolStripMenuItem.Size = new System.Drawing.Size(108, 24);
-            this.repackBINsToolStripMenuItem.Text = "Repack .BINs";
-            this.repackBINsToolStripMenuItem.Click += new System.EventHandler(this.RepackBINs_Click);
-            // 
-            // optionsToolStripMenuItem
-            // 
-            this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.chk_IgnoreBinaryDiff,
-            this.chk_OverwriteSameName,
-            this.chk_IgnoreNameDiff,
-            this.chk_UseBINsForDupeReplacement,
-            this.chk_EnableOutputLog,
-            this.chk_ConfirmOperations});
-            this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
-            this.optionsToolStripMenuItem.Size = new System.Drawing.Size(75, 24);
-            this.optionsToolStripMenuItem.Text = "Options";
-            // 
-            // chk_IgnoreBinaryDiff
-            // 
-            this.chk_IgnoreBinaryDiff.Checked = true;
-            this.chk_IgnoreBinaryDiff.CheckOnClick = true;
-            this.chk_IgnoreBinaryDiff.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_IgnoreBinaryDiff.Enabled = false;
-            this.chk_IgnoreBinaryDiff.Name = "chk_IgnoreBinaryDiff";
-            this.chk_IgnoreBinaryDiff.Size = new System.Drawing.Size(356, 26);
-            this.chk_IgnoreBinaryDiff.Text = "Ignore Binary Differences for Duplicates";
-            this.chk_IgnoreBinaryDiff.CheckedChanged += new System.EventHandler(this.CheckedChanged);
-            // 
-            // chk_OverwriteSameName
-            // 
-            this.chk_OverwriteSameName.Checked = true;
-            this.chk_OverwriteSameName.CheckOnClick = true;
-            this.chk_OverwriteSameName.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_OverwriteSameName.Enabled = false;
-            this.chk_OverwriteSameName.Name = "chk_OverwriteSameName";
-            this.chk_OverwriteSameName.Size = new System.Drawing.Size(356, 26);
-            this.chk_OverwriteSameName.Text = "Replace Existing Dupes w/ Same Name";
-            this.chk_OverwriteSameName.CheckedChanged += new System.EventHandler(this.CheckedChanged);
-            // 
-            // chk_IgnoreNameDiff
-            // 
-            this.chk_IgnoreNameDiff.CheckOnClick = true;
-            this.chk_IgnoreNameDiff.Enabled = false;
-            this.chk_IgnoreNameDiff.Name = "chk_IgnoreNameDiff";
-            this.chk_IgnoreNameDiff.Size = new System.Drawing.Size(356, 26);
-            this.chk_IgnoreNameDiff.Text = "Ignore File Name Differences";
-            this.chk_IgnoreNameDiff.CheckedChanged += new System.EventHandler(this.CheckedChanged);
-            // 
-            // chk_EnableOutputLog
-            // 
-            this.chk_EnableOutputLog.Checked = true;
-            this.chk_EnableOutputLog.CheckOnClick = true;
-            this.chk_EnableOutputLog.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chk_EnableOutputLog.Enabled = false;
-            this.chk_EnableOutputLog.Name = "chk_EnableOutputLog";
-            this.chk_EnableOutputLog.Size = new System.Drawing.Size(356, 26);
-            this.chk_EnableOutputLog.Text = "Enable Output Log";
-            this.chk_EnableOutputLog.CheckedChanged += new System.EventHandler(this.CheckedChanged);
-            // 
-            // tlp_Main
-            // 
-            this.tlp_Main.AllowDrop = true;
-            this.tlp_Main.ColumnCount = 2;
-            this.tlp_Main.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlp_Main.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlp_Main.Controls.Add(this.btn_Extract, 0, 0);
-            this.tlp_Main.Controls.Add(this.rtb_Log, 1, 0);
-            this.tlp_Main.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlp_Main.Location = new System.Drawing.Point(0, 28);
-            this.tlp_Main.Name = "tlp_Main";
-            this.tlp_Main.RowCount = 1;
-            this.tlp_Main.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlp_Main.Size = new System.Drawing.Size(598, 291);
-            this.tlp_Main.TabIndex = 1;
-            // 
-            // btn_Extract
-            // 
-            this.btn_Extract.AllowDrop = true;
-            this.btn_Extract.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btn_Extract.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
-            this.btn_Extract.Location = new System.Drawing.Point(3, 3);
-            this.btn_Extract.Name = "btn_Extract";
-            this.btn_Extract.Size = new System.Drawing.Size(293, 285);
-            this.btn_Extract.TabIndex = 0;
-            this.btn_Extract.Text = "Drag Archives To Extract";
-            this.btn_Extract.UseVisualStyleBackColor = true;
-            this.btn_Extract.Click += new System.EventHandler(this.ExtractBtn_Click);
-            this.btn_Extract.DragDrop += new System.Windows.Forms.DragEventHandler(this.ExtractBtn_DragDrop);
-            this.btn_Extract.DragEnter += new System.Windows.Forms.DragEventHandler(this.DragEnter);
+            this.isolateTexturesWithoutMatchesToolStripMenuItem.Name = "isolateTexturesWithoutMatchesToolStripMenuItem";
+            this.isolateTexturesWithoutMatchesToolStripMenuItem.Size = new System.Drawing.Size(310, 26);
+            this.isolateTexturesWithoutMatchesToolStripMenuItem.Text = "Isolate Textures Without Matches";
+            this.isolateTexturesWithoutMatchesToolStripMenuItem.Click += new System.EventHandler(this.IsolateUnmatchedTex_Click);
             // 
             // rtb_Log
             // 
@@ -203,44 +97,66 @@
             this.rtb_Log.TabIndex = 1;
             this.rtb_Log.Text = "";
             // 
-            // collectUniqueTexToolStripMenuItem
+            // tlp_Main
             // 
-            this.collectUniqueTexToolStripMenuItem.Name = "collectUniqueTexToolStripMenuItem";
-            this.collectUniqueTexToolStripMenuItem.Size = new System.Drawing.Size(146, 24);
-            this.collectUniqueTexToolStripMenuItem.Text = "Collect Unique Tex";
-            this.collectUniqueTexToolStripMenuItem.Click += new System.EventHandler(this.CollectUniqueTex_Click);
+            this.tlp_Main.AllowDrop = true;
+            this.tlp_Main.ColumnCount = 2;
+            this.tlp_Main.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tlp_Main.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tlp_Main.Controls.Add(this.rtb_Log, 1, 0);
+            this.tlp_Main.Controls.Add(this.tlp_ArchiveButtons, 0, 0);
+            this.tlp_Main.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tlp_Main.Location = new System.Drawing.Point(0, 28);
+            this.tlp_Main.Name = "tlp_Main";
+            this.tlp_Main.RowCount = 1;
+            this.tlp_Main.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tlp_Main.Size = new System.Drawing.Size(598, 291);
+            this.tlp_Main.TabIndex = 1;
             // 
-            // chooseInputFolderToolStripMenuItem
+            // tlp_ArchiveButtons
             // 
-            this.chooseInputFolderToolStripMenuItem.Name = "chooseInputFolderToolStripMenuItem";
-            this.chooseInputFolderToolStripMenuItem.Size = new System.Drawing.Size(283, 26);
-            this.chooseInputFolderToolStripMenuItem.Text = "Choose Edited Tex Folder";
-            this.chooseInputFolderToolStripMenuItem.Click += new System.EventHandler(this.ChooseInputFolder_Click);
+            this.tlp_ArchiveButtons.ColumnCount = 1;
+            this.tlp_ArchiveButtons.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tlp_ArchiveButtons.Controls.Add(this.btn_Repack, 0, 1);
+            this.tlp_ArchiveButtons.Controls.Add(this.btn_Extract, 0, 0);
+            this.tlp_ArchiveButtons.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tlp_ArchiveButtons.Location = new System.Drawing.Point(3, 3);
+            this.tlp_ArchiveButtons.Name = "tlp_ArchiveButtons";
+            this.tlp_ArchiveButtons.RowCount = 2;
+            this.tlp_ArchiveButtons.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tlp_ArchiveButtons.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tlp_ArchiveButtons.Size = new System.Drawing.Size(293, 285);
+            this.tlp_ArchiveButtons.TabIndex = 2;
             // 
-            // chooseOriginalBINFolderToolStripMenuItem
+            // btn_Repack
             // 
-            this.chooseOriginalBINFolderToolStripMenuItem.Name = "chooseOriginalBINFolderToolStripMenuItem";
-            this.chooseOriginalBINFolderToolStripMenuItem.Size = new System.Drawing.Size(283, 26);
-            this.chooseOriginalBINFolderToolStripMenuItem.Text = "Choose Original .BIN Folder";
-            this.chooseOriginalBINFolderToolStripMenuItem.Click += new System.EventHandler(this.ChooseOriginalBinFolder_Click);
+            this.btn_Repack.AllowDrop = true;
+            this.btn_Repack.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btn_Repack.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btn_Repack.Location = new System.Drawing.Point(3, 145);
+            this.btn_Repack.Name = "btn_Repack";
+            this.btn_Repack.Size = new System.Drawing.Size(287, 137);
+            this.btn_Repack.TabIndex = 2;
+            this.btn_Repack.Text = "Drag Archives To Repack";
+            this.btn_Repack.UseVisualStyleBackColor = true;
+            this.btn_Repack.Click += new System.EventHandler(this.RepackBINs_Click);
+            this.btn_Repack.DragDrop += new System.Windows.Forms.DragEventHandler(this.RepackBINs_DragDrop);
+            this.btn_Repack.DragEnter += new System.Windows.Forms.DragEventHandler(this.DragEnter);
             // 
-            // chk_ConfirmOperations
+            // btn_Extract
             // 
-            this.chk_ConfirmOperations.CheckOnClick = true;
-            this.chk_ConfirmOperations.Enabled = false;
-            this.chk_ConfirmOperations.Name = "chk_ConfirmOperations";
-            this.chk_ConfirmOperations.Size = new System.Drawing.Size(356, 26);
-            this.chk_ConfirmOperations.Text = "Confirm Operations";
-            this.chk_ConfirmOperations.CheckedChanged += new System.EventHandler(this.CheckedChanged);
-            // 
-            // chk_UseBINsForDupeReplacement
-            // 
-            this.chk_UseBINsForDupeReplacement.CheckOnClick = true;
-            this.chk_UseBINsForDupeReplacement.Enabled = false;
-            this.chk_UseBINsForDupeReplacement.Name = "chk_UseBINsForDupeReplacement";
-            this.chk_UseBINsForDupeReplacement.Size = new System.Drawing.Size(356, 26);
-            this.chk_UseBINsForDupeReplacement.Text = "Use BINs for Dupe Replacement";
-            this.chk_UseBINsForDupeReplacement.CheckedChanged += new System.EventHandler(this.CheckedChanged);
+            this.btn_Extract.AllowDrop = true;
+            this.btn_Extract.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.btn_Extract.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F);
+            this.btn_Extract.Location = new System.Drawing.Point(3, 3);
+            this.btn_Extract.Name = "btn_Extract";
+            this.btn_Extract.Size = new System.Drawing.Size(287, 136);
+            this.btn_Extract.TabIndex = 1;
+            this.btn_Extract.Text = "Drag Archives To Extract";
+            this.btn_Extract.UseVisualStyleBackColor = true;
+            this.btn_Extract.Click += new System.EventHandler(this.ExtractBINs_Click);
+            this.btn_Extract.DragDrop += new System.Windows.Forms.DragEventHandler(this.ExtractBINs_DragDrop);
+            this.btn_Extract.DragEnter += new System.Windows.Forms.DragEventHandler(this.DragEnter);
             // 
             // P5RFieldTexUtilityForm
             // 
@@ -257,6 +173,7 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.tlp_Main.ResumeLayout(false);
+            this.tlp_ArchiveButtons.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -265,23 +182,14 @@
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem chooseExportFolderToolStripMenuItem;
-        private System.Windows.Forms.TableLayoutPanel tlp_Main;
-        private System.Windows.Forms.Button btn_Extract;
-        private System.Windows.Forms.ToolStripMenuItem replaceDuplicatesToolStripMenuItem;
         private System.Windows.Forms.RichTextBox rtb_Log;
-        private System.Windows.Forms.ToolStripMenuItem repackBINsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem chk_OverwriteSameName;
-        private System.Windows.Forms.ToolStripMenuItem chk_IgnoreBinaryDiff;
-        private System.Windows.Forms.ToolStripMenuItem chk_IgnoreNameDiff;
-        private System.Windows.Forms.ToolStripMenuItem chooseDupesOutputFolderToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem chk_EnableOutputLog;
-        private System.Windows.Forms.ToolStripMenuItem collectUniqueTexToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem chooseInputFolderToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem chooseOriginalBINFolderToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem chk_ConfirmOperations;
-        private System.Windows.Forms.ToolStripMenuItem chk_UseBINsForDupeReplacement;
+        private System.Windows.Forms.TableLayoutPanel tlp_Main;
+        private System.Windows.Forms.TableLayoutPanel tlp_ArchiveButtons;
+        private System.Windows.Forms.Button btn_Repack;
+        private System.Windows.Forms.Button btn_Extract;
+        private System.Windows.Forms.ToolStripMenuItem utilitiesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem replaceDuplicateTexturesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem collectUniqueTexturesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem isolateTexturesWithoutMatchesToolStripMenuItem;
     }
 }

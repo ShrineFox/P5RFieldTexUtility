@@ -5,16 +5,12 @@ namespace P5RFieldTexUtility
 {
     public class Config
     {
-        public string InputEditedTexPath { get; set; } = "./EditedTex";
-        public string OriginalBINDirPath { get; set; } = "./OGBINs";
-        public string DuplicateExportPath { get; set; } = "./Duplicates";
-        public string BinExportPath { get; set; } = "./Export";
-        public bool IgnoreBinaryDiff { get; set; } = true;
-        public bool OverwriteSameName { get; set; } = true;
-        public bool IgnoreNameDiff { get; set; } = false;
-        public bool UseBINsForDupeReplacement { get; set; } = false;
-        public bool EnableOutputLog { get; set; } = true;
-        public bool ConfirmOperations { get; set; } = false;
+        public string ExtractedOutputDir { get; set; } = "./Extracted"; // Destination for textures from .BIN
+        public string LastInputExtractedBinDir { get; set; } = ""; // Last known directory of .BIN to extract
+        public string RepackedBinDir { get; set; } = "./Repacked"; // Destination for repacked .BIN files
+        public string LastTexToRepackDir { get; set; } = ""; // Last known directory of Tex to repack
+        public string CustomTexDir { get; set; } = "./CustomTex"; // Directory of textures to replace with
+        public string ReplaceTexDir { get; set; } = ""; // Last known directory of Tex to replace
 
         public void SaveJson(Config settings)
         {
